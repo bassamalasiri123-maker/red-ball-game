@@ -66,6 +66,14 @@
       background: #8bd6ed;
     }
 
+    .game.is-losing { animation: loss-shake 420ms ease-out; }
+
+    @keyframes loss-shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-7px); }
+      40%, 80% { transform: translateX(7px); }
+    }
+
     canvas {
       display: block;
       width: 100%;
@@ -84,10 +92,31 @@
       backdrop-filter: blur(4px);
     }
 
+    .overlay.is-loss {
+      animation: loss-flash 280ms ease-out both;
+      background: #561d35c9;
+    }
+
+    .overlay.is-loss .card { animation: loss-card 420ms cubic-bezier(0.2, 0.8, 0.25, 1.2) both; }
+
+    @keyframes loss-flash {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes loss-card {
+      from { opacity: 0; transform: translateY(22px) scale(0.92); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     .overlay[hidden] { display: none; }
     .card { max-width: 420px; }
     .card h2 { margin: 0 0 8px; font-size: 1.8rem; }
     .card p { margin: 0 0 17px; color: #d1deeb; line-height: 1.7; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .game.is-losing, .overlay.is-loss, .overlay.is-loss .card { animation: none; }
+    }
 
     button {
       padding: 10px 18px;
@@ -201,6 +230,7 @@
   <script>
     const canvas = document.querySelector("#canvas");
     const ctx = canvas.getContext("2d");
+    const gameElement = document.querySelector(".game");
     const overlay = document.querySelector("#overlay");
     const titleElement = document.querySelector("#title");
     const messageElement = document.querySelector("#message");
@@ -273,8 +303,12 @@
       const scale = bounds.height / viewHeight;
       viewWidth = bounds.width / scale;
       ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
-      cameraX = Math.min(cameraX, Math.max(0, worldWidth - viewWidth));
+      cameraX = Math.min(cameraX, Math.max(0, worldWidth - viewWidth / getCameraZoom()));
       draw();
+    }
+
+    function getCameraZoom() {
+      return window.matchMedia("(orientation: portrait) and (max-width: 700px)").matches ? 0.78 : 1;
     }
 
     function loadLevel() {
@@ -338,6 +372,8 @@
         if (!player) resetLevel();
       }
       state = "playing";
+      gameElement.classList.remove("is-losing");
+      overlay.classList.remove("is-loss");
       overlay.hidden = true;
       lastFrame = performance.now();
       accumulator = 0;
@@ -349,6 +385,15 @@
       messageElement.textContent = message;
       startButton.textContent = buttonText;
       overlay.hidden = false;
+    }
+
+    function showLossOverlay(title, message, buttonText) {
+      showOverlay(title, message, buttonText);
+      gameElement.classList.remove("is-losing");
+      overlay.classList.remove("is-loss");
+      void gameElement.offsetWidth;
+      gameElement.classList.add("is-losing");
+      overlay.classList.add("is-loss");
     }
 
     function updateAttempts() {
@@ -364,7 +409,7 @@
         levelIndex = 1;
         resetLevel();
         state = "outOfAttempts";
-        showOverlay("خلصت محاولاتك يا بطل!", "يبدو أن الأشواك فازت بالجولة! اضغط للعودة إلى المرحلة الأولى وبدء جولة جديدة بثلاث محاولات.", "ابدأ من جديد");
+        showLossOverlay("خلصت محاولاتك يا بطل!", "يبدو أن الأشواك فازت بالجولة! اضغط للعودة إلى المرحلة الأولى وبدء جولة جديدة بثلاث محاولات.", "ابدأ من جديد");
         return;
       }
       state = "ready";
@@ -373,7 +418,7 @@
         "الأشواك أخذت نقطة هذه المرة! باقي لك فرصة، انتبه للقفزة.",
         "كان قريبًا... تقريبًا! حاول توقيت القفزة بشكل أفضل."
       ];
-      showOverlay("أوه! راحت محاولة", `${taunts[maxAttempts - attemptsRemaining - 1]} بقيت ${attemptsRemaining} من ${maxAttempts} محاولات. المرحلة ${levelIndex} بانتظارك.`, "حاول مرة أخرى");
+      showLossOverlay("أوه! راحت محاولة", `${taunts[maxAttempts - attemptsRemaining - 1]} بقيت ${attemptsRemaining} من ${maxAttempts} محاولات. المرحلة ${levelIndex} بانتظارك.`, "حاول مرة أخرى");
     }
 
     function winGame() {
@@ -467,7 +512,8 @@
       }
 
       if (player.x >= worldWidth - 75) winGame();
-      const targetCameraX = Math.max(0, Math.min(worldWidth - viewWidth, player.x - viewWidth * 0.36));
+      const visibleWorldWidth = viewWidth / getCameraZoom();
+      const targetCameraX = Math.max(0, Math.min(worldWidth - visibleWorldWidth, player.x - visibleWorldWidth * 0.36));
       cameraX += (targetCameraX - cameraX) * Math.min(1, 0.12 * step);
     }
 
@@ -502,10 +548,14 @@
         ctx.fill();
       }
 
+      const zoom = getCameraZoom();
       ctx.save();
+      ctx.translate(viewWidth / 2, viewHeight / 2);
+      ctx.scale(zoom, zoom);
+      ctx.translate(-viewWidth / 2, -viewHeight / 2);
       ctx.translate(-cameraX, 0);
       ctx.fillStyle = palette[2];
-      ctx.fillRect(0, groundY, worldWidth, viewHeight - groundY);
+      ctx.fillRect(0, groundY, worldWidth, viewHeight + viewHeight * (1 - zoom) / zoom - groundY);
       ctx.fillStyle = "#73bd6b";
       ctx.fillRect(0, groundY, worldWidth, 12);
 
