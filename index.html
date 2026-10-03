@@ -409,6 +409,10 @@
     const LEVEL_LENGTH = 200;
     const MAX_LEVEL = 50;
     const MAX_LIVES = 3;
+    const ROAD_SURFACE_Y = -0.08;
+    const BALL_RADIUS = 0.92;
+    const SLIDE_SQUASH = 0.56;
+    const BALL_GROUND_Y = ROAD_SURFACE_Y + BALL_RADIUS;
     const LANE_X = [-3.2, 0, 3.2];
     const LEVEL_NAMES = ["وادي الفجر", "غابة النيون", "قمة السحاب", "صحراء الكريستال", "كهف الشفق", "مدينة الأطياف", "جسر العاصفة", "بحر النجوم", "بوابة البركان", "قلب المجرة"];
     const LEVEL_COLORS = [0x3b94b7, 0x26a782, 0x666bd5, 0xc57d39, 0x994b95, 0x3c9eae, 0x537fc8, 0x8270c9, 0xcf6445, 0x3b79db];
@@ -593,7 +597,7 @@
 
     function createPlayer() {
       player = new THREE.Group();
-      playerBall = makeMesh(new THREE.SphereGeometry(0.92, 32, 24), sceneMaterials.red, { x: 0, y: 1, z: 0 }, player);
+      playerBall = makeMesh(new THREE.SphereGeometry(BALL_RADIUS, 32, 24), sceneMaterials.red, { x: 0, y: 0, z: 0 }, player);
       const faceCanvas = document.createElement("canvas");
       faceCanvas.width = 1024;
       faceCanvas.height = 512;
@@ -640,8 +644,9 @@
         new THREE.MeshBasicMaterial({ color: 0x020816, transparent: true, opacity: 0.42, depthWrite: false })
       );
       playerShadow.rotation.x = -Math.PI / 2;
-      playerShadow.position.y = 0.025;
+      playerShadow.position.y = ROAD_SURFACE_Y + 0.025;
       scene.add(playerShadow);
+      player.position.y = BALL_GROUND_Y;
       scene.add(player);
     }
 
@@ -835,6 +840,7 @@
 
     function jump() {
       if (state !== "playing" || !grounded) return;
+      slidingUntil = 0;
       grounded = false;
       verticalVelocity = 10.9 + Math.min(level - 1, 5) * 0.12;
     }
@@ -875,7 +881,7 @@
       completedStages = 0;
       lostScoreSubmitted = false;
       createLevel(level);
-      player.position.set(0, 1, 0);
+      player.position.set(0, BALL_GROUND_Y, 0);
       player.rotation.set(0, 0, 0);
       playerBall.rotation.set(0, 0, 0);
       state = "playing";
@@ -1023,8 +1029,8 @@
       for (const hazard of hazards) {
         if (hazard.lane !== Math.round(lane) || Math.abs(distance - hazard.distance) > 1.5) continue;
         if (hazard.type === "drone" && isSliding) continue;
-        if ((hazard.type === "spike" && player.position.y > 1.65) ||
-            (hazard.type === "block" && player.position.y > 2.25)) continue;
+        if ((hazard.type === "spike" && player.position.y > BALL_GROUND_Y + 0.65) ||
+            (hazard.type === "block" && player.position.y > BALL_GROUND_Y + 1.25)) continue;
         takeHit();
         return;
       }
@@ -1040,25 +1046,25 @@
       lane += (targetLane - lane) * Math.min(1, delta * 13);
       player.position.x += (LANE_X[Math.round(targetLane)] - player.position.x) * Math.min(1, delta * 13);
       player.position.z = -distance;
+      const isSliding = now < slidingUntil;
+      const squash = isSliding ? SLIDE_SQUASH : 1;
       if (!grounded) {
         verticalVelocity -= 25 * delta;
         player.position.y += verticalVelocity * delta;
-        if (player.position.y <= 1) {
-          player.position.y = 1;
+        if (player.position.y <= BALL_GROUND_Y) {
+          player.position.y = BALL_GROUND_Y;
           verticalVelocity = 0;
           grounded = true;
         }
       } else {
-        player.position.y = 1 + Math.sin(animationTime * 13) * 0.035;
+        player.position.y = ROAD_SURFACE_Y + BALL_RADIUS * squash;
       }
-      const isSliding = now < slidingUntil;
-      const squash = isSliding ? 0.56 : 1;
       playerBall.scale.set(1, squash, 1);
-      playerBall.rotation.x = (distance * 0.72) % (Math.PI * 2);
+      playerBall.rotation.x = (distance / (BALL_RADIUS * squash)) % (Math.PI * 2);
       player.visible = now >= invulnerableUntil || Math.floor(now / 90) % 2 === 0;
       playerShadow.position.x = player.position.x;
       playerShadow.position.z = player.position.z;
-      playerShadow.material.opacity = Math.max(0.12, 0.42 - (player.position.y - 1) * 0.12);
+      playerShadow.material.opacity = Math.max(0.12, 0.42 - (player.position.y - BALL_GROUND_Y) * 0.12);
       for (const hazard of hazards) {
         if (hazard.type === "drone") {
           hazard.group.position.x = LANE_X[hazard.lane] + Math.sin(animationTime * 2.5 + hazard.phase) * 0.22;
@@ -1095,7 +1101,7 @@
       if (state !== "hit" && state !== "paused") return;
       if (state === "hit") {
         distance = Math.max(stageStart + 1, Math.min(distance, level * LEVEL_LENGTH - 6));
-        player.position.set(LANE_X[Math.round(targetLane)], 1, -distance);
+        player.position.set(LANE_X[Math.round(targetLane)], BALL_GROUND_Y, -distance);
         verticalVelocity = 0;
         grounded = true;
         invulnerableUntil = performance.now() + 1500;
