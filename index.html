@@ -335,15 +335,15 @@
                   <h2 class="welcome-title">الكرة الحمراء <span>3D</span></h2>
                 </div>
               </div>
-              <p class="panel-copy">أدخل الاسم الذي تريد ظهوره في التصنيف العالمي، ثم انطلق في خمسين مرحلة أطول مليئة بالتحديات. اقفز فوق الأشواك الحمراء، وانزلق تحت الطائرات، واجمع البلورات لتحقق أعلى نتيجة.</p>
+              <p class="panel-copy">انطلق في خمسين مرحلة أطول مليئة بالتحديات. أدخل اسمًا إذا أردت تسجيل نتيجتك في التصنيف العالمي، أو اتركه فارغًا والعب كضيف دون تسجيل نتيجتك.</p>
               <form id="name-form">
-                <label class="name-label" for="player-name">اسمك في التصنيف العالمي — مطلوب للعب</label>
+                <label class="name-label" for="player-name">اسمك في التصنيف العالمي — اختياري</label>
                 <div class="name-row">
-                  <input id="player-name" name="playerName" maxlength="18" minlength="1" autocomplete="off" placeholder="اكتب اسمك هنا" required>
+                  <input id="player-name" name="playerName" maxlength="18" autocomplete="off" placeholder="اتركه فارغًا للعب كضيف">
                   <button type="submit" id="play-button">ابدأ المغامرة</button>
                 </div>
               </form>
-              <p class="controls-hint">لن تبدأ اللعبة دون اسم. بعد الجولة، تُحفظ أفضل نتيجة باسمك في قائمة المتصدرين العالمية.<br>كمبيوتر: ← → تغيير المسار · ↑ أو مسافة للقفز · ↓ للانزلاق · Shift للاندفاع<br>جوال: اسحب يمينًا أو يسارًا لتغيير المسار، وللأعلى للقفز، وللأسفل للانزلاق، وانقر مرتين للاندفاع.</p>
+              <p class="controls-hint">الاسم اختياري: أدخله لتسجيل نتيجتك في قائمة المتصدرين العالمية، أو اتركه فارغًا للعب كضيف دون حفظ النتيجة.<br>كمبيوتر: ← → تغيير المسار · ↑ أو مسافة للقفز · ↓ للانزلاق · Shift للاندفاع<br>جوال: اسحب يمينًا أو يسارًا لتغيير المسار، وللأعلى للقفز، وللأسفل للانزلاق، وانقر مرتين للاندفاع.</p>
             </div>
             <aside class="leaderboard" aria-label="قائمة أعلى اللاعبين">
               <div class="leader-head">
@@ -855,14 +855,9 @@
 
     function startGame() {
       playerName = sanitizeName(nameInput.value);
-      if (!playerName) {
-        nameInput.setCustomValidity("اكتب اسمك أولًا عشان نسجل نتيجتك.");
-        nameInput.reportValidity();
-        return;
-      }
       nameInput.setCustomValidity("");
       nameInput.value = playerName;
-      localStorage.setItem(PLAYER_NAME_KEY, playerName);
+      if (playerName) localStorage.setItem(PLAYER_NAME_KEY, playerName);
       lane = 1;
       targetLane = 1;
       distance = 0;
@@ -897,7 +892,7 @@
       menuPanel.hidden = false;
       resultPanel.hidden = true;
       overlay.hidden = false;
-      nameInput.value = playerName || localStorage.getItem(PLAYER_NAME_KEY) || "";
+      nameInput.value = playerName;
       nameInput.focus({ preventScroll: true });
     }
 
@@ -914,6 +909,7 @@
     }
 
     function saveLocalScore() {
+      if (!playerName) return;
       const entries = localScores();
       entries.push({ name: playerName, score, level, date: new Date().toISOString() });
       entries.sort((a, b) => b.score - a.score);
@@ -927,6 +923,11 @@
     async function submitScore() {
       if (lostScoreSubmitted) return;
       lostScoreSubmitted = true;
+      if (!playerName) {
+        submitState.dataset.kind = "";
+        submitState.textContent = "لعبت كضيف؛ لم تُحفظ نتيجتك ولم تُرسل إلى قائمة المتصدرين.";
+        return;
+      }
       saveLocalScore();
       submitState.dataset.kind = "";
       if (!isLeaderboardConfigured()) {
@@ -968,7 +969,7 @@
       state = "result";
       showResult(
         won ? "أسطورة المسارات! 🏆" : "انتهى السباق!",
-        `${playerName}، نتيجتك ${formatter.format(score)} نقطة، وجمعت ${formatter.format(crystals)} بلورة وأنهيت ${formatter.format(won ? MAX_LEVEL : level)} من ${formatter.format(MAX_LEVEL)} مراحل.`,
+        `${playerName ? `${playerName}، ` : ""}نتيجتك ${formatter.format(score)} نقطة، وجمعت ${formatter.format(crystals)} بلورة وأنهيت ${formatter.format(won ? MAX_LEVEL : level)} من ${formatter.format(MAX_LEVEL)} مراحل.`,
         won ? "أنهيت المغامرة كاملة" : "حاول تكسر رقمك"
       );
       void submitScore();
