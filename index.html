@@ -244,6 +244,7 @@
     .control-label { display: block; color: #859ab4; font-size: .62rem; font-weight: 600; }
     .mobile-gesture-hint { display: none; }
     #game-world canvas { touch-action: none; }
+    body.is-menu .bottom-bar { display: none; }
 
     @media (max-width: 760px) {
       main { grid-template-rows: auto minmax(280px, 1fr) auto; gap: 9px; padding-right: max(8px, env(safe-area-inset-right)); padding-left: max(8px, env(safe-area-inset-left)); }
@@ -274,11 +275,7 @@
       .leader-note { margin-top: 7px; }
       .bottom-bar { flex-direction: column; gap: 7px; }
       .game-actions { order: 3; }
-      .control-row { order: 1; width: min(100%, 430px); justify-content: space-between; gap: 6px; }
-      .control-group { gap: 6px; }
-      .control-group button { width: clamp(48px, 15vw, 60px); min-height: 56px; padding: 6px 4px; border-radius: 15px; font-size: 1.1rem; }
-      .control-group button.jump { width: clamp(62px, 18vw, 72px); min-height: 62px; border-radius: 18px; font-size: .83rem; }
-      .control-label { font-size: .58rem; }
+      .control-row { display: none; }
       .mobile-gesture-hint { display: block; order: 2; margin: 0; color: #8ca2bc; font-size: .66rem; text-align: center; }
     }
 
@@ -304,7 +301,7 @@
     }
   </style>
 </head>
-<body>
+<body class="is-menu">
   <main>
     <header>
       <div class="brand">
@@ -317,7 +314,7 @@
       <div class="stats" aria-label="نتيجة اللعب">
         <div class="stat score"><span>النقاط</span><strong id="score">٠</strong></div>
         <div class="stat crystals"><span>البلورات</span><strong id="crystals">٠</strong></div>
-        <div class="stat"><span>المرحلة</span><strong id="level">١ / ١٠</strong></div>
+        <div class="stat"><span>المرحلة</span><strong id="level">١ / ٥٠</strong></div>
         <div class="stat"><span>القلوب</span><strong id="lives">٣</strong></div>
       </div>
     </header>
@@ -338,7 +335,7 @@
                   <h2 class="welcome-title">الكرة الحمراء <span>3D</span></h2>
                 </div>
               </div>
-              <p class="panel-copy">أدخل الاسم الذي تريد ظهوره في التصنيف العالمي، ثم انطلق في عشرة عوالم مليئة بالتحديات. اقفز فوق الأشواك، انزلق تحت الطائرات، واجمع البلورات لتحقق أعلى نتيجة.</p>
+              <p class="panel-copy">أدخل الاسم الذي تريد ظهوره في التصنيف العالمي، ثم انطلق في خمسين مرحلة أطول مليئة بالتحديات. اقفز فوق الأشواك الحمراء، وانزلق تحت الطائرات، واجمع البلورات لتحقق أعلى نتيجة.</p>
               <form id="name-form">
                 <label class="name-label" for="player-name">اسمك في التصنيف العالمي — مطلوب للعب</label>
                 <div class="name-row">
@@ -346,7 +343,7 @@
                   <button type="submit" id="play-button">ابدأ المغامرة</button>
                 </div>
               </form>
-              <p class="controls-hint">لن تبدأ اللعبة دون اسم. بعد الجولة، تُحفظ أفضل نتيجة باسمك في قائمة المتصدرين العالمية.<br>كمبيوتر: ← → تغيير المسار · ↑ أو مسافة للقفز · ↓ للانزلاق · Shift للاندفاع<br>جوال: استخدم أزرار التحكم أو اسحب على ساحة اللعبة.</p>
+              <p class="controls-hint">لن تبدأ اللعبة دون اسم. بعد الجولة، تُحفظ أفضل نتيجة باسمك في قائمة المتصدرين العالمية.<br>كمبيوتر: ← → تغيير المسار · ↑ أو مسافة للقفز · ↓ للانزلاق · Shift للاندفاع<br>جوال: اسحب يمينًا أو يسارًا لتغيير المسار، وللأعلى للقفز، وللأسفل للانزلاق، وانقر مرتين للاندفاع.</p>
             </div>
             <aside class="leaderboard" aria-label="قائمة أعلى اللاعبين">
               <div class="leader-head">
@@ -354,7 +351,7 @@
                 <span class="leader-state" id="leader-state">جارٍ تحميل النتائج…</span>
               </div>
               <ol class="leader-list" id="leader-list" aria-live="polite"></ol>
-              <p class="leader-note" id="leader-note">كل بلورة = ٢٥٠ نقطة · وكل مرحلة تنهيها = ١٠٠٠ نقطة</p>
+              <p class="leader-note" id="leader-note">كل بلورة = ٣٠ نقطة · وكل مرحلة تنهيها = ١٢٠ نقطة</p>
             </aside>
           </div>
           <p class="submit-state" id="setup-notice" data-kind="error" hidden></p>
@@ -387,7 +384,7 @@
       <div class="game-actions">
         <button type="button" id="pause-button">⏸ إيقاف مؤقت</button>
       </div>
-      <div class="control-row" aria-label="أزرار التحكم">
+      <div class="control-row" aria-label="أزرار تحكم لوحة المفاتيح">
         <div class="control-group movement-controls" role="group" aria-label="تغيير المسار">
           <button type="button" data-action="left" aria-label="المسار الأيسر">◀<span class="control-label">يسار</span></button>
           <button type="button" data-action="right" aria-label="المسار الأيمن">▶<span class="control-label">يمين</span></button>
@@ -398,7 +395,7 @@
           <button class="dash" type="button" data-action="dash" aria-label="اندفاع">⚡<span class="control-label">اندفاع</span></button>
         </div>
       </div>
-      <p class="mobile-gesture-hint">اسحب يمينًا أو يسارًا لتغيير المسار · للأعلى للقفز · للأسفل للانزلاق</p>
+      <p class="mobile-gesture-hint">اسحب لتغيير المسار أو للقفز والانزلاق · انقر مرتين للاندفاع</p>
     </div>
   </main>
 
@@ -409,8 +406,8 @@
     const SUPABASE_ANON_KEY = "sb_publishable_rHtZWXMzapW0G6d95P137Q_MHV8ixsb";
     const PLAYER_NAME_KEY = "red-ball-3d-player";
     const LOCAL_SCORES_KEY = "red-ball-3d-local-scores";
-    const LEVEL_LENGTH = 130;
-    const MAX_LEVEL = 10;
+    const LEVEL_LENGTH = 200;
+    const MAX_LEVEL = 50;
     const MAX_LIVES = 3;
     const LANE_X = [-3.2, 0, 3.2];
     const LEVEL_NAMES = ["وادي الفجر", "غابة النيون", "قمة السحاب", "صحراء الكريستال", "كهف الشفق", "مدينة الأطياف", "جسر العاصفة", "بحر النجوم", "بوابة البركان", "قلب المجرة"];
@@ -443,7 +440,6 @@
     let clock;
     let player;
     let playerBall;
-    let playerBand;
     let playerShadow;
     let stars = [];
     let hazards = [];
@@ -470,18 +466,16 @@
     let rendererReady = false;
     let completedStages = 0;
     let touchStart = null;
+    let lastTouchTapAt = 0;
 
     const sceneMaterials = {
       floor: new THREE.MeshStandardMaterial({ color: 0x102139, roughness: 0.9 }),
       road: new THREE.MeshStandardMaterial({ color: 0x182d48, roughness: 0.76 }),
       lane: new THREE.MeshStandardMaterial({ color: 0x82dcdb, emissive: 0x174947, emissiveIntensity: 0.8, roughness: 0.38 }),
       red: new THREE.MeshStandardMaterial({ color: 0xee304d, roughness: 0.25, metalness: 0.1 }),
-      band: new THREE.MeshStandardMaterial({ color: 0xffa0a6, roughness: 0.25, metalness: 0.25 }),
-      white: new THREE.MeshStandardMaterial({ color: 0xfff6e6, roughness: 0.3 }),
-      dark: new THREE.MeshStandardMaterial({ color: 0x111b2c, roughness: 0.55 }),
-      spike: new THREE.MeshStandardMaterial({ color: 0xff526d, emissive: 0x80122e, emissiveIntensity: 0.45, metalness: 0.22, roughness: 0.3 }),
-      block: new THREE.MeshStandardMaterial({ color: 0x8849cb, emissive: 0x321154, emissiveIntensity: 0.4, metalness: 0.32, roughness: 0.31 }),
-      drone: new THREE.MeshStandardMaterial({ color: 0x50d8de, emissive: 0x146a78, emissiveIntensity: 0.65, metalness: 0.4, roughness: 0.25 }),
+      spike: new THREE.MeshStandardMaterial({ color: 0xe3183e, emissive: 0x98001c, emissiveIntensity: 0.85, metalness: 0.18, roughness: 0.32 }),
+      block: new THREE.MeshStandardMaterial({ color: 0xe3183e, emissive: 0x98001c, emissiveIntensity: 0.85, metalness: 0.18, roughness: 0.32 }),
+      drone: new THREE.MeshStandardMaterial({ color: 0xe3183e, emissive: 0x98001c, emissiveIntensity: 0.85, metalness: 0.18, roughness: 0.32 }),
       gold: new THREE.MeshStandardMaterial({ color: 0xffd45e, emissive: 0xe88711, emissiveIntensity: 0.9, metalness: 0.55, roughness: 0.19 }),
       crystal: new THREE.MeshStandardMaterial({ color: 0x80fff0, emissive: 0x16c9bb, emissiveIntensity: 1.15, metalness: 0.16, roughness: 0.2 }),
       portal: new THREE.MeshStandardMaterial({ color: 0x80f4e8, emissive: 0x23a699, emissiveIntensity: 1.15, metalness: 0.3, roughness: 0.2 }),
@@ -494,6 +488,10 @@
 
     function sanitizeName(value) {
       return Array.from(value.replace(/[\u0000-\u001f\u007f]/g, "").trim()).slice(0, 18).join("");
+    }
+
+    function getLevelName(levelNumber) {
+      return LEVEL_NAMES[(levelNumber - 1) % LEVEL_NAMES.length];
     }
 
     function localScores() {
@@ -567,15 +565,15 @@
     }
 
     function updateScoreboard() {
-      const distancePoints = Math.floor(bestDistance * 5);
-      score = distancePoints + crystals * 250 + completedStages * 1000;
+      const distancePoints = Math.floor(bestDistance * 2);
+      score = distancePoints + crystals * 30 + completedStages * 120;
       scoreElement.textContent = formatter.format(score);
       crystalsElement.textContent = formatter.format(crystals);
       levelElement.textContent = `${formatter.format(level)} / ${formatter.format(MAX_LEVEL)}`;
       livesElement.textContent = formatter.format(lives);
       distanceTag.textContent = `${String(Math.floor(bestDistance)).padStart(3, "0")} m`;
       progressBar.style.width = `${Math.min(100, ((distance - stageStart) / LEVEL_LENGTH) * 100)}%`;
-      stageTag.textContent = `المرحلة ${formatter.format(level)} · ${LEVEL_NAMES[level - 1]}`;
+      stageTag.textContent = `المرحلة ${formatter.format(level)} · ${getLevelName(level)}`;
     }
 
     function makeMesh(geometry, material, position, parent = scene) {
@@ -596,13 +594,47 @@
     function createPlayer() {
       player = new THREE.Group();
       playerBall = makeMesh(new THREE.SphereGeometry(0.92, 32, 24), sceneMaterials.red, { x: 0, y: 1, z: 0 }, player);
-      playerBand = makeMesh(new THREE.TorusGeometry(0.64, 0.075, 10, 48), sceneMaterials.band, { x: 0, y: 0.1, z: 0.65 }, player);
-      const leftEye = makeMesh(new THREE.SphereGeometry(0.16, 14, 12), sceneMaterials.white, { x: -0.28, y: 0.28, z: 0.72 }, player);
-      const rightEye = makeMesh(new THREE.SphereGeometry(0.16, 14, 12), sceneMaterials.white, { x: 0.16, y: 0.28, z: 0.82 }, player);
-      makeMesh(new THREE.SphereGeometry(0.075, 12, 10), sceneMaterials.dark, { x: -0.25, y: 0.26, z: 0.86 }, player);
-      makeMesh(new THREE.SphereGeometry(0.075, 12, 10), sceneMaterials.dark, { x: 0.19, y: 0.26, z: 0.96 }, player);
-      leftEye.castShadow = false;
-      rightEye.castShadow = false;
+      const faceCanvas = document.createElement("canvas");
+      faceCanvas.width = 1024;
+      faceCanvas.height = 512;
+      const faceContext = faceCanvas.getContext("2d");
+      if (!faceContext) throw new Error("تعذر إنشاء خامة وجه الكرة.");
+      for (const x of [220, 292]) {
+        faceContext.fillStyle = "#fff8ef";
+        faceContext.beginPath();
+        faceContext.ellipse(x, 244, 23, 31, 0, 0, Math.PI * 2);
+        faceContext.fill();
+        faceContext.fillStyle = "#39202c";
+        faceContext.beginPath();
+        faceContext.ellipse(x + 4, 250, 11, 17, 0, 0, Math.PI * 2);
+        faceContext.fill();
+        faceContext.fillStyle = "#fff8ef";
+        faceContext.beginPath();
+        faceContext.arc(x + 7, 242, 4, 0, Math.PI * 2);
+        faceContext.fill();
+      }
+      faceContext.fillStyle = "#ff9aa7";
+      for (const x of [182, 330]) {
+        faceContext.beginPath();
+        faceContext.ellipse(x, 294, 13, 7, 0, 0, Math.PI * 2);
+        faceContext.fill();
+      }
+      faceContext.strokeStyle = "#64182c";
+      faceContext.lineWidth = 10;
+      faceContext.lineCap = "round";
+      faceContext.beginPath();
+      faceContext.moveTo(218, 294);
+      faceContext.quadraticCurveTo(256, 328, 294, 294);
+      faceContext.stroke();
+      const faceTexture = new THREE.CanvasTexture(faceCanvas);
+      faceTexture.colorSpace = THREE.SRGBColorSpace;
+      faceTexture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+      const faceDecal = new THREE.Mesh(
+        new THREE.SphereGeometry(0.924, 48, 32),
+        new THREE.MeshBasicMaterial({ map: faceTexture, transparent: true, depthWrite: false, toneMapped: false })
+      );
+      faceDecal.renderOrder = 1;
+      playerBall.add(faceDecal);
       playerShadow = new THREE.Mesh(
         new THREE.CircleGeometry(1.1, 28),
         new THREE.MeshBasicMaterial({ color: 0x020816, transparent: true, opacity: 0.42, depthWrite: false })
@@ -632,16 +664,16 @@
       sun.shadow.normalBias = 0.04;
       scene.add(sun);
 
-      const ground = makeMesh(new THREE.PlaneGeometry(90, 2100), sceneMaterials.floor, { x: 0, y: -0.18, z: -930 });
+      const ground = makeMesh(new THREE.PlaneGeometry(90, 11000), sceneMaterials.floor, { x: 0, y: -0.18, z: -4900 });
       ground.rotation.x = -Math.PI / 2;
       ground.receiveShadow = true;
-      const road = makeMesh(new THREE.PlaneGeometry(12.4, 2050), sceneMaterials.road, { x: 0, y: -0.08, z: -900 });
+      const road = makeMesh(new THREE.PlaneGeometry(12.4, 10500), sceneMaterials.road, { x: 0, y: -0.08, z: -4900 });
       road.rotation.x = -Math.PI / 2;
       for (const x of [-5.7, -1.6, 1.6, 5.7]) {
-        const rail = makeMesh(new THREE.BoxGeometry(x === -5.7 || x === 5.7 ? 0.12 : 0.045, 0.035, 2000), sceneMaterials.lane, { x, y: 0.015, z: -900 });
+        const rail = makeMesh(new THREE.BoxGeometry(x === -5.7 || x === 5.7 ? 0.12 : 0.045, 0.035, 10500), sceneMaterials.lane, { x, y: 0.015, z: -4900 });
         rail.castShadow = false;
       }
-      for (let i = 0; i < 32; i += 1) {
+      for (let i = 0; i < 170; i += 1) {
         const z = 16 - i * 62;
         for (const side of [-1, 1]) {
           const height = 2 + (i * 7 % 11) * 0.52;
@@ -655,8 +687,8 @@
         }
       }
       const particlePositions = [];
-      for (let i = 0; i < 300; i += 1) {
-        particlePositions.push((Math.random() - 0.5) * 190, 8 + Math.random() * 62, 20 - Math.random() * 1500);
+      for (let i = 0; i < 1100; i += 1) {
+        particlePositions.push((Math.random() - 0.5) * 190, 8 + Math.random() * 62, 20 - Math.random() * 10500);
       }
       const particleGeometry = new THREE.BufferGeometry();
       particleGeometry.setAttribute("position", new THREE.Float32BufferAttribute(particlePositions, 3));
@@ -672,15 +704,32 @@
       if (type === "spike") {
         const base = makeMesh(new THREE.ConeGeometry(0.88, 1.65, 5), sceneMaterials.spike, { x: 0, y: 0.8, z: 0 }, group);
         base.rotation.y = Math.PI / 5;
+        for (const x of [-0.54, 0.54]) {
+          const thorn = makeMesh(new THREE.ConeGeometry(0.42, 1.05, 5), sceneMaterials.spike, { x, y: 0.55, z: 0.22 }, group);
+          thorn.rotation.z = x < 0 ? -0.32 : 0.32;
+        }
         makeMesh(new THREE.CylinderGeometry(0.78, 0.9, 0.22, 6), sceneMaterials.spike, { x: 0, y: 0.11, z: 0 }, group);
       } else if (type === "block") {
-        const block = makeMesh(new THREE.BoxGeometry(1.9, 2.15, 1.8), sceneMaterials.block, { x: 0, y: 1.08, z: 0 }, group);
-        block.rotation.y = Math.PI / 4;
-        makeMesh(new THREE.BoxGeometry(1.15, 0.12, 1.95), sceneMaterials.portal, { x: 0, y: 1.45, z: 0.02 }, group);
+        const block = makeMesh(new THREE.DodecahedronGeometry(1.18, 0), sceneMaterials.block, { x: 0, y: 1.12, z: 0 }, group);
+        block.rotation.set(0.24, Math.PI / 4, 0.17);
+        for (const x of [-0.48, 0.48]) {
+          const thorn = makeMesh(new THREE.ConeGeometry(0.3, 0.82, 5), sceneMaterials.spike, { x, y: 1.82, z: 0.16 }, group);
+          thorn.rotation.z = x < 0 ? -0.45 : 0.45;
+        }
       } else {
         const body = makeMesh(new THREE.SphereGeometry(0.68, 22, 16), sceneMaterials.drone, { x: 0, y: 2.55, z: 0 }, group);
         body.scale.set(1.25, 0.8, 0.8);
-        makeMesh(new THREE.TorusGeometry(0.89, 0.065, 8, 30), sceneMaterials.white, { x: 0, y: 2.55, z: 0 }, group);
+        makeMesh(new THREE.TorusGeometry(0.89, 0.065, 8, 30), sceneMaterials.spike, { x: 0, y: 2.55, z: 0 }, group);
+        for (let index = 0; index < 8; index += 1) {
+          const angle = (index / 8) * Math.PI * 2;
+          const thorn = makeMesh(
+            new THREE.ConeGeometry(0.16, 0.54, 5),
+            sceneMaterials.spike,
+            { x: Math.cos(angle) * 0.92, y: 2.55 + Math.sin(angle) * 0.92, z: 0 },
+            group
+          );
+          thorn.rotation.z = -angle + Math.PI / 2;
+        }
         const light = makeMesh(new THREE.SphereGeometry(0.16, 12, 10), sceneMaterials.spike, { x: 0, y: 2.52, z: 0.55 }, group);
         light.castShadow = false;
       }
@@ -734,8 +783,8 @@
       const roadTone = new THREE.Color(color).multiplyScalar(0.3);
       sceneMaterials.road.color.copy(roadTone);
       const obstacleTypes = ["spike", "block", "drone"];
-      for (let index = 0; index < 7; index += 1) {
-        const waveDistance = stageStart + 20 + index * 14;
+      for (let index = 0; index < 10; index += 1) {
+        const waveDistance = stageStart + 18 + index * 17;
         const hazardLane = Math.floor(Math.random() * 3);
         const type = obstacleTypes[(index + levelNumber - 1) % obstacleTypes.length];
         createObstacle(type, hazardLane, waveDistance);
@@ -835,6 +884,7 @@
       player.rotation.set(0, 0, 0);
       playerBall.rotation.set(0, 0, 0);
       state = "playing";
+      document.body.classList.remove("is-menu");
       overlay.hidden = true;
       gameElement.classList.remove("is-losing");
       document.querySelector("#pause-button").textContent = "⏸ إيقاف مؤقت";
@@ -843,6 +893,7 @@
 
     function showMenu() {
       state = "menu";
+      document.body.classList.add("is-menu");
       menuPanel.hidden = false;
       resultPanel.hidden = true;
       overlay.hidden = false;
@@ -858,6 +909,7 @@
       resultPanel.hidden = false;
       overlay.hidden = false;
       document.querySelector("#result-button").textContent = "العب مرة ثانية";
+      document.body.classList.remove("is-menu");
       gameElement.classList.add("is-losing");
     }
 
@@ -949,7 +1001,7 @@
       level += 1;
       createLevel(level);
       updateScoreboard();
-      stageTag.textContent = `المرحلة ${formatter.format(level)} · ${LEVEL_NAMES[level - 1]}`;
+      stageTag.textContent = `المرحلة ${formatter.format(level)} · ${getLevelName(level)}`;
     }
 
     function collectCrystals() {
@@ -1001,7 +1053,6 @@
       const isSliding = now < slidingUntil;
       const squash = isSliding ? 0.56 : 1;
       playerBall.scale.set(1, squash, 1);
-      playerBand.position.y = isSliding ? -0.27 : 0.1;
       playerBall.rotation.x = (distance * 0.72) % (Math.PI * 2);
       player.visible = now >= invulnerableUntil || Math.floor(now / 90) % 2 === 0;
       playerShadow.position.x = player.position.x;
@@ -1119,7 +1170,17 @@
       const deltaY = event.clientY - touchStart.y;
       touchStart = null;
       if (state !== "playing") return;
-      if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < 38) return;
+      if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) < 38) {
+        const tappedAt = performance.now();
+        if (lastTouchTapAt && tappedAt - lastTouchTapAt < 320) {
+          dash();
+          lastTouchTapAt = 0;
+        } else {
+          lastTouchTapAt = tappedAt;
+        }
+        return;
+      }
+      lastTouchTapAt = 0;
       if (Math.abs(deltaX) > Math.abs(deltaY)) changeLane(deltaX < 0 ? -1 : 1);
       else if (deltaY < 0) jump();
       else slide();
