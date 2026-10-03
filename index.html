@@ -2,737 +2,1113 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>مغامرة الكرة الحمراء</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07111e">
+  <title>الكرة الحمراء 3D | مغامرة المسارات</title>
   <style>
     :root {
       color-scheme: dark;
       font-family: "Segoe UI", Tahoma, sans-serif;
-      color: #f1f7ff;
-      background: #081322;
+      color: #f4f7ff;
+      background: #07111e;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
 
     * { box-sizing: border-box; }
 
     body {
       width: 100%;
-      height: 100vh;
-      height: 100dvh;
+      min-width: 320px;
+      min-height: 100vh;
+      min-height: 100dvh;
       margin: 0;
-      overflow: hidden;
-      background: #081322;
+      overflow-x: hidden;
+      background:
+        radial-gradient(ellipse at 50% -12%, #284b79 0, transparent 48%),
+        linear-gradient(155deg, #0c1b2e, #07111e 68%);
     }
+
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
 
     main {
-      width: 100%;
-      height: 100%;
+      width: min(1440px, 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr) auto auto;
-      gap: 8px;
-      padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
-      background: radial-gradient(ellipse at 50% 0%, #153454 0, #081322 70%);
-    }
-
-    header, .stats, .actions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      grid-template-rows: auto minmax(320px, 1fr) auto;
       gap: 12px;
     }
 
-    header { min-width: 0; }
-    h1 { margin: 0; font-size: clamp(1rem, 3vw, 1.4rem); }
-    .hint { display: none; }
-    .stats { justify-content: flex-end; }
-
+    header, .brand, .stats, .game-actions, .control-row { display: flex; align-items: center; }
+    header { justify-content: space-between; gap: 16px; min-width: 0; }
+    .brand { gap: 12px; min-width: 0; }
+    .brand-mark {
+      width: 45px;
+      height: 45px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border: 1px solid #ff788b77;
+      border-radius: 15px;
+      color: white;
+      background: linear-gradient(145deg, #ff526c, #ad203d);
+      box-shadow: 0 8px 28px #fa34503d, inset 0 1px #ffffff55;
+      font-size: 1.5rem;
+    }
+    h1 { margin: 0; font-size: clamp(1rem, 3vw, 1.35rem); letter-spacing: -.025em; }
+    .subtitle { margin: 3px 0 0; color: #9db1ca; font-size: .77rem; }
+    .stats { justify-content: flex-end; gap: 8px; }
     .stat {
-      min-width: 0;
-      padding: 4px 8px;
-      border: 1px solid #2d4965;
-      border-radius: 10px;
-      background: #0b1929dd;
+      min-width: 82px;
+      padding: 7px 11px;
+      border: 1px solid #ffffff17;
+      border-radius: 13px;
+      background: linear-gradient(145deg, #13243aeb, #0d1b2dec);
+      box-shadow: 0 7px 20px #0002;
       text-align: center;
     }
-
-    .stat span { display: block; color: #9eb4ca; font-size: clamp(0.58rem, 2vw, 0.72rem); }
-    .stat strong { display: block; margin-top: 2px; color: #ffd16e; font-size: clamp(0.78rem, 2.6vw, 1rem); }
+    .stat span { display: block; color: #9badc4; font-size: .68rem; }
+    .stat strong { display: block; margin-top: 3px; color: #fff; font-size: 1rem; direction: ltr; font-variant-numeric: tabular-nums; }
+    .stat.score strong { color: #ffd77c; }
+    .stat.crystals strong { color: #78f3e7; }
 
     .game {
       position: relative;
       min-height: 0;
       overflow: hidden;
-      border: 1px solid #31516d;
-      border-radius: 12px;
-      background: #8bd6ed;
+      border: 1px solid #52739c88;
+      border-radius: 22px;
+      background: #101f35;
+      box-shadow: 0 22px 65px #0005, inset 0 1px #ffffff20;
+      isolation: isolate;
     }
-
-    .game.is-losing { animation: loss-shake 420ms ease-out; }
-
-    @keyframes loss-shake {
+    #game-world { position: absolute; inset: 0; }
+    #game-world canvas { display: block; width: 100%; height: 100%; outline: none; }
+    .game::after {
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+      background: linear-gradient(180deg, #07111e55 0, transparent 25%, transparent 77%, #07111e77 100%);
+    }
+    .game.is-losing { animation: impact-shake 420ms ease-out; }
+    .game.is-boosting { box-shadow: 0 22px 65px #0005, 0 0 32px #64f4e477, inset 0 1px #ffffff20; }
+    @keyframes impact-shake {
       0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-7px); }
-      40%, 80% { transform: translateX(7px); }
+      18%, 58% { transform: translateX(-8px); }
+      38%, 78% { transform: translateX(8px); }
     }
 
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      touch-action: none;
+    .stage-tag, .distance-tag {
+      position: absolute;
+      z-index: 2;
+      top: 16px;
+      padding: 9px 13px;
+      border: 1px solid #ffffff22;
+      border-radius: 13px;
+      background: #091629bb;
+      backdrop-filter: blur(12px);
+      font-size: .78rem;
+      font-weight: 700;
+      pointer-events: none;
     }
+    .stage-tag { right: 16px; }
+    .distance-tag { left: 16px; direction: ltr; color: #d4e8ff; font-variant-numeric: tabular-nums; }
+    .progress-track {
+      position: absolute;
+      z-index: 2;
+      top: 61px;
+      right: 16px;
+      left: 16px;
+      height: 4px;
+      overflow: hidden;
+      border-radius: 9px;
+      background: #ffffff24;
+      pointer-events: none;
+    }
+    .progress-bar { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #58eadb, #ffd675); transition: width 100ms linear; }
 
     .overlay {
       position: absolute;
+      z-index: 3;
       inset: 0;
       display: grid;
       place-items: center;
-      padding: 20px;
-      background: #081626bd;
-      text-align: center;
-      backdrop-filter: blur(4px);
+      overflow-y: auto;
+      padding: clamp(14px, 4vw, 38px);
+      background: #07111ebd;
+      backdrop-filter: blur(11px);
     }
-
-    .overlay.is-loss {
-      animation: loss-flash 280ms ease-out both;
-      background: #561d35c9;
+    .overlay[hidden] { display: none; }
+    .panel {
+      width: min(100%, 820px);
+      max-height: 100%;
+      overflow-y: auto;
+      padding: clamp(18px, 4vw, 34px);
+      border: 1px solid #d5e5ff24;
+      border-radius: 24px;
+      background:
+        radial-gradient(ellipse at 92% 0, #435d8b45, transparent 42%),
+        linear-gradient(145deg, #12243a, #0c1929);
+      box-shadow: 0 30px 90px #0009, inset 0 1px #ffffff19;
+      animation: panel-enter 420ms cubic-bezier(.2,.8,.25,1.15) both;
     }
-
-    .overlay.is-loss .card { animation: loss-card 420ms cubic-bezier(0.2, 0.8, 0.25, 1.2) both; }
-
-    @keyframes loss-flash {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes loss-card {
-      from { opacity: 0; transform: translateY(22px) scale(0.92); }
+    @keyframes panel-enter {
+      from { opacity: 0; transform: translateY(18px) scale(.97); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
+    .panel[hidden] { display: none; }
+    .panel-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(235px, .9fr); gap: 28px; align-items: start; }
+    .eyebrow { margin: 0 0 8px; color: #79ebdf; font-size: .74rem; font-weight: 800; letter-spacing: .12em; }
+    .panel h2 { margin: 0 0 10px; font-size: clamp(1.65rem, 5vw, 2.6rem); line-height: 1.12; }
+    .panel-copy { margin: 0 0 18px; color: #bdcadd; line-height: 1.75; }
+    .name-label { display: block; margin-bottom: 7px; color: #d8e4f4; font-size: .85rem; font-weight: 700; }
+    .name-row { display: flex; gap: 8px; }
+    input {
+      width: 100%;
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid #6984a855;
+      border-radius: 12px;
+      outline: none;
+      color: white;
+      background: #071321;
+      text-align: right;
+    }
+    input:focus { border-color: #6de8dc; box-shadow: 0 0 0 3px #6de8dc22; }
+    .name-row input { flex: 1; }
+    button {
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      color: #101a27;
+      background: linear-gradient(135deg, #ffe39d, #ffc95c);
+      box-shadow: 0 8px 24px #ffc95c2b, inset 0 1px #ffffffa6;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 150ms ease, filter 150ms ease, border-color 150ms ease;
+    }
+    button:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    button:active { transform: translateY(1px); }
+    button:focus-visible { outline: 3px solid #80f5e9; outline-offset: 3px; }
+    button.secondary { color: #e4edfa; border-color: #ffffff22; background: #1b3049; box-shadow: none; }
+    button:disabled { cursor: wait; filter: saturate(.5); }
+    .name-row button { flex: 0 0 auto; }
+    .controls-hint { margin: 14px 0 0; color: #94a8c1; font-size: .75rem; line-height: 1.7; }
+    .leaderboard { min-width: 0; padding: 16px; border: 1px solid #ffffff17; border-radius: 17px; background: #0713219c; }
+    .leader-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    .leader-head h3 { margin: 0; font-size: 1rem; }
+    .leader-state { color: #92a7c0; font-size: .67rem; text-align: left; }
+    .leader-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .leader-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 9px; align-items: center; padding: 8px 9px; border: 1px solid #ffffff0c; border-radius: 10px; background: #ffffff07; }
+    .leader-rank { color: #ffd675; font-size: .75rem; font-weight: 900; text-align: center; }
+    .leader-name { overflow: hidden; color: #e6eef9; font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
+    .leader-score { color: #7bece0; font-size: .79rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .empty-leader { padding: 14px 7px; color: #93a7c0; font-size: .8rem; line-height: 1.65; text-align: center; }
+    .leader-note { margin: 11px 0 0; color: #758aa5; font-size: .67rem; line-height: 1.6; }
+    .result-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+    .submit-state { min-height: 1.4em; margin: 10px 0 0; color: #9eb1c8; font-size: .78rem; line-height: 1.6; }
+    .submit-state[data-kind="error"] { color: #ffabb4; }
+    .submit-state[data-kind="success"] { color: #83f3cf; }
 
-    .overlay[hidden] { display: none; }
-    .card { max-width: 420px; }
-    .card h2 { margin: 0 0 8px; font-size: 1.8rem; }
-    .card p { margin: 0 0 17px; color: #d1deeb; line-height: 1.7; }
+    .bottom-bar { display: flex; justify-content: center; align-items: center; gap: 14px; }
+    .game-actions { gap: 8px; }
+    .game-actions button { min-height: 38px; padding: 7px 12px; color: #dce8f8; border-color: #ffffff17; background: #142740; box-shadow: none; font-size: .78rem; }
+    .control-row { justify-content: center; gap: 9px; direction: ltr; }
+    .control-row button { width: clamp(57px, 9vw, 78px); min-height: clamp(48px, 7.2vh, 63px); padding: 8px; color: #f2f7ff; border-color: #ffffff24; background: linear-gradient(145deg, #203a57, #132941); box-shadow: 0 7px 18px #0003; font-size: 1.2rem; touch-action: none; user-select: none; }
+    .control-row button.jump { width: clamp(82px, 13vw, 118px); color: #172136; border-color: #ffe69a; background: linear-gradient(145deg, #ffe9a9, #ffc85c); font-size: .95rem; }
+    .control-row button.slide { color: #c8d9ff; }
+    .control-row button.dash { color: #80f5e9; }
+    .control-row button.is-pressed { transform: translateY(2px) scale(.98); filter: brightness(1.2); }
+    .control-label { display: block; color: #859ab4; font-size: .62rem; font-weight: 600; }
+
+    @media (max-width: 760px) {
+      main { grid-template-rows: auto minmax(280px, 1fr) auto; gap: 9px; padding-right: max(8px, env(safe-area-inset-right)); padding-left: max(8px, env(safe-area-inset-left)); }
+      header { align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+      .brand-mark { width: 38px; height: 38px; border-radius: 12px; }
+      .subtitle { display: none; }
+      .stats { flex: 1; gap: 5px; }
+      .stat { min-width: 0; flex: 1; padding: 6px 5px; border-radius: 10px; }
+      .stat span { font-size: .59rem; }
+      .stat strong { font-size: .88rem; }
+      .game { border-radius: 16px; }
+      .stage-tag, .distance-tag { top: 10px; padding: 7px 9px; font-size: .69rem; }
+      .stage-tag { right: 10px; }
+      .distance-tag { left: 10px; }
+      .progress-track { top: 48px; right: 10px; left: 10px; }
+      .overlay { padding: 10px; }
+      .panel { padding: 17px; border-radius: 19px; }
+      .panel-grid { grid-template-columns: 1fr; gap: 15px; }
+      .panel h2 { font-size: 1.65rem; }
+      .panel-copy { margin-bottom: 12px; font-size: .86rem; }
+      .leaderboard { padding: 12px; }
+      .leader-list { grid-template-columns: 1fr 1fr; }
+      .leader-row { grid-template-columns: 23px minmax(0, 1fr) auto; gap: 5px; padding: 7px 5px; }
+      .leader-name, .leader-score { font-size: .7rem; }
+      .leader-rank { font-size: .67rem; }
+      .leader-note { margin-top: 7px; }
+      .bottom-bar { flex-direction: column; gap: 7px; }
+      .game-actions { order: 2; }
+      .control-row { order: 1; width: min(100%, 390px); }
+      .control-row button { flex: 1; max-width: 76px; min-height: 49px; }
+      .control-row button.jump { flex: 1.35; max-width: 108px; }
+    }
+
+    @media (max-height: 620px) and (orientation: landscape) {
+      main { grid-template-rows: auto minmax(180px, 1fr) auto; gap: 6px; padding-top: max(5px, env(safe-area-inset-top)); padding-bottom: max(5px, env(safe-area-inset-bottom)); }
+      header { flex-wrap: nowrap; }
+      .brand-mark { width: 32px; height: 32px; }
+      .subtitle { display: none; }
+      .stat { padding: 3px 8px; }
+      .game { border-radius: 12px; }
+      .bottom-bar { flex-direction: row; justify-content: space-between; }
+      .game-actions { order: 1; }
+      .control-row { order: 2; width: auto; }
+      .control-row button { min-height: 40px; }
+      .panel { padding: 14px 18px; }
+      .panel-grid { grid-template-columns: minmax(0, 1.1fr) minmax(210px, .9fr); gap: 16px; }
+      .panel h2 { font-size: 1.55rem; }
+      .panel-copy { margin-bottom: 10px; font-size: .82rem; }
+      .leaderboard { padding: 10px; }
+    }
 
     @media (prefers-reduced-motion: reduce) {
-      .game.is-losing, .overlay.is-loss, .overlay.is-loss .card { animation: none; }
-    }
-
-    button {
-      padding: 10px 18px;
-      border: 0;
-      border-radius: 11px;
-      color: #271500;
-      background: #ffd16e;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    button:hover { filter: brightness(1.08); }
-    button:focus-visible { outline: 3px solid white; outline-offset: 3px; }
-
-    .actions { justify-content: center; }
-    .actions button { color: #e5f0fb; background: #203a55; padding: 7px 12px; font-size: 0.86rem; }
-    .small-hint { display: none; }
-
-    .touch-controls {
-      display: none;
-      grid-template-columns: repeat(3, minmax(64px, 1fr));
-      gap: 8px;
-      width: min(100%, 420px);
-      margin: 0 auto;
-      direction: ltr;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    .touch-controls button {
-      min-height: clamp(48px, 8dvh, 66px);
-      padding: 8px;
-      border: 1px solid #47627b;
-      color: #f1f7ff;
-      background: #203a55;
-      font-size: 1.35rem;
-      touch-action: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .touch-controls button:active,
-    .touch-controls button.is-pressed {
-      color: #271500;
-      background: #ffd16e;
-      transform: translateY(2px);
-    }
-
-    .touch-controls .jump {
-      grid-column: 3;
-      grid-row: 1;
-      color: #271500;
-      background: #ffd16e;
-      font-size: 1rem;
-    }
-
-    @media (pointer: coarse), (max-width: 700px) {
-      .touch-controls { display: grid; }
-    }
-
-    @media (max-height: 540px) and (orientation: landscape) {
-      main { gap: 4px; padding-top: max(4px, env(safe-area-inset-top)); padding-bottom: max(4px, env(safe-area-inset-bottom)); }
-      header { flex-direction: row; align-items: center; }
-      h1 { font-size: 1.1rem; }
-      .stats { gap: 6px; }
-      .stat { min-width: 62px; padding: 4px 7px; }
-      .touch-controls { width: min(100%, 390px); gap: 5px; }
-      .touch-controls button { min-height: 40px; }
-      .actions button { padding: 4px 9px; }
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
   </style>
 </head>
 <body>
   <main>
     <header>
-      <div>
-        <h1>مغامرة الكرة الحمراء</h1>
-        <p class="hint">عشر مراحل جديدة، بعوائق متحركة ورسوم أوضح. اقفز واجمع النجوم!</p>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">●</div>
+        <div>
+          <h1>الكرة الحمراء <span style="color:#79eee2">3D</span></h1>
+          <p class="subtitle">اهرب من الفخاخ، اجمع البلورات، ونافس أبطال العالم</p>
+        </div>
       </div>
-      <div class="stats" aria-label="نتيجة اللعبة">
-        <div class="stat"><span>المرحلة</span><strong id="level">1 / 10</strong></div>
-        <div class="stat"><span>النجوم</span><strong id="stars">0 / 5</strong></div>
-        <div class="stat"><span>المحاولات المتبقية</span><strong id="tries">3 / 3</strong></div>
+      <div class="stats" aria-label="نتيجة اللعب">
+        <div class="stat score"><span>النقاط</span><strong id="score">٠</strong></div>
+        <div class="stat crystals"><span>البلورات</span><strong id="crystals">٠</strong></div>
+        <div class="stat"><span>المرحلة</span><strong id="level">١ / ١٠</strong></div>
+        <div class="stat"><span>القلوب</span><strong id="lives">٣</strong></div>
       </div>
     </header>
 
-    <section class="game" aria-label="لعبة الكرة الحمراء">
-      <canvas id="canvas" width="900" height="500" aria-label="ساحة اللعب"></canvas>
+    <section class="game" id="game" aria-label="ساحة الكرة الحمراء ثلاثية الأبعاد">
+      <div id="game-world" aria-label="مشهد اللعبة ثلاثي الأبعاد"></div>
+      <div class="stage-tag" id="stage-tag">المرحلة الأولى · وادي الفجر</div>
+      <div class="distance-tag" id="distance-tag">000 m</div>
+      <div class="progress-track" aria-label="تقدم المرحلة"><div class="progress-bar" id="progress-bar"></div></div>
       <div class="overlay" id="overlay">
-        <div class="card">
-          <h2 id="title">مستعد للمغامرة؟</h2>
-          <p id="message">لديك 3 محاولات فقط. استخدم ← و → للحركة و↑ أو مسافة للقفز، وتجنب الأشواك والأعداء المتحركين!</p>
-          <button id="start" type="button">ابدأ اللعب</button>
-        </div>
+        <section class="panel" id="menu-panel">
+          <div class="panel-grid">
+            <div>
+              <p class="eyebrow">مغامرة ثلاثية الأبعاد</p>
+              <h2>مستعد تتصدر<br>الترتيب؟</h2>
+              <p class="panel-copy">اختر اسمك، وانطلق بين المسارات في عشرة عوالم متصاعدة. اقفز فوق الأشواك، انزلق تحت الطائرات، واجمع البلورات لتسجل نقاطًا أكثر.</p>
+              <form id="name-form">
+                <label class="name-label" for="player-name">اسم اللاعب — لازم قبل اللعب</label>
+                <div class="name-row">
+                  <input id="player-name" name="playerName" maxlength="18" minlength="1" autocomplete="nickname" placeholder="مثال: بطل الكرة" required>
+                  <button type="submit" id="play-button">ابدأ المغامرة</button>
+                </div>
+              </form>
+              <p class="controls-hint">كمبيوتر: ← → لتغيير المسار · ↑ أو مسافة للقفز · ↓ للانزلاق · Shift للاندفاع<br>جوال: استخدم أزرار التحكم أسفل اللعبة.</p>
+            </div>
+            <aside class="leaderboard" aria-label="قائمة أعلى اللاعبين">
+              <div class="leader-head">
+                <h3>🏆 أعلى الأبطال</h3>
+                <span class="leader-state" id="leader-state">جارٍ تحميل النتائج…</span>
+              </div>
+              <ol class="leader-list" id="leader-list" aria-live="polite"></ol>
+              <p class="leader-note" id="leader-note">كل بلورة = ٢٥٠ نقطة · وكل مرحلة تنهيها = ١٠٠٠ نقطة</p>
+            </aside>
+          </div>
+          <p class="submit-state" id="setup-notice" data-kind="error" hidden></p>
+        </section>
+        <section class="panel" id="result-panel" hidden>
+          <div class="panel-grid">
+            <div>
+              <p class="eyebrow" id="result-eyebrow">انتهى السباق</p>
+              <h2 id="result-title">أحسنت يا بطل!</h2>
+              <p class="panel-copy" id="result-message"></p>
+              <p class="submit-state" id="submit-state" aria-live="polite"></p>
+              <div class="result-actions">
+                <button type="button" id="result-button">العب مرة ثانية</button>
+                <button class="secondary" type="button" id="menu-button">القائمة الرئيسية</button>
+              </div>
+            </div>
+            <aside class="leaderboard" aria-label="قائمة أعلى اللاعبين">
+              <div class="leader-head">
+                <h3>🏆 أعلى الأبطال</h3>
+                <span class="leader-state">أفضل النتائج</span>
+              </div>
+              <ol class="leader-list" id="result-leader-list"></ol>
+            </aside>
+          </div>
+        </section>
       </div>
     </section>
 
-    <div class="actions">
-      <button id="restart" type="button">إعادة المرحلة</button>
-      <button id="fullscreen" type="button" aria-label="ملء الشاشة">⛶ ملء الشاشة</button>
+    <div class="bottom-bar">
+      <div class="game-actions">
+        <button type="button" id="pause-button">⏸ إيقاف مؤقت</button>
+      </div>
+      <div class="control-row" aria-label="أزرار التحكم">
+        <button type="button" data-action="left" aria-label="المسار الأيسر">◀<span class="control-label">يسار</span></button>
+        <button type="button" data-action="right" aria-label="المسار الأيمن">▶<span class="control-label">يمين</span></button>
+        <button class="slide" type="button" data-action="slide" aria-label="انزلق">⬇<span class="control-label">انزلاق</span></button>
+        <button class="jump" type="button" data-action="jump" aria-label="اقفز">اقفز ⤒</button>
+        <button class="dash" type="button" data-action="dash" aria-label="اندفاع">⚡<span class="control-label">اندفاع</span></button>
+      </div>
     </div>
-    <div class="touch-controls" aria-label="أزرار التحكم باللمس">
-      <button type="button" data-key="ArrowLeft" aria-label="تحرك لليسار">◀</button>
-      <button type="button" data-key="ArrowRight" aria-label="تحرك لليمين">▶</button>
-      <button class="jump" type="button" data-key=" " aria-label="اقفز">اقفز ⤒</button>
-    </div>
-    <p class="small-hint">بالجوال: اضغط مطولًا على ◀ أو ▶ للتحرك، وزر «اقفز» للقفز. بالكمبيوتر استخدم الأسهم أو A و D و W.</p>
   </main>
 
-  <script>
-    const canvas = document.querySelector("#canvas");
-    const ctx = canvas.getContext("2d");
-    const gameElement = document.querySelector(".game");
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+    const SUPABASE_URL = "";
+    const SUPABASE_ANON_KEY = "";
+    const PLAYER_NAME_KEY = "red-ball-3d-player";
+    const LOCAL_SCORES_KEY = "red-ball-3d-local-scores";
+    const LEVEL_LENGTH = 130;
+    const MAX_LEVEL = 10;
+    const MAX_LIVES = 3;
+    const LANE_X = [-3.2, 0, 3.2];
+    const LEVEL_NAMES = ["وادي الفجر", "غابة النيون", "قمة السحاب", "صحراء الكريستال", "كهف الشفق", "مدينة الأطياف", "جسر العاصفة", "بحر النجوم", "بوابة البركان", "قلب المجرة"];
+    const LEVEL_COLORS = [0x3b94b7, 0x26a782, 0x666bd5, 0xc57d39, 0x994b95, 0x3c9eae, 0x537fc8, 0x8270c9, 0xcf6445, 0x3b79db];
+    const formatter = new Intl.NumberFormat("ar");
+    const world = document.querySelector("#game-world");
+    const gameElement = document.querySelector("#game");
     const overlay = document.querySelector("#overlay");
-    const titleElement = document.querySelector("#title");
-    const messageElement = document.querySelector("#message");
-    const startButton = document.querySelector("#start");
-    const starsElement = document.querySelector("#stars");
-    const triesElement = document.querySelector("#tries");
+    const menuPanel = document.querySelector("#menu-panel");
+    const resultPanel = document.querySelector("#result-panel");
+    const nameInput = document.querySelector("#player-name");
+    const nameForm = document.querySelector("#name-form");
+    const playButton = document.querySelector("#play-button");
+    const scoreElement = document.querySelector("#score");
+    const crystalsElement = document.querySelector("#crystals");
     const levelElement = document.querySelector("#level");
+    const livesElement = document.querySelector("#lives");
+    const stageTag = document.querySelector("#stage-tag");
+    const distanceTag = document.querySelector("#distance-tag");
+    const progressBar = document.querySelector("#progress-bar");
+    const leaderState = document.querySelector("#leader-state");
+    const leaderList = document.querySelector("#leader-list");
+    const resultLeaderList = document.querySelector("#result-leader-list");
+    const setupNotice = document.querySelector("#setup-notice");
+    const submitState = document.querySelector("#submit-state");
 
-    let viewWidth = 900;
-    const viewHeight = 500;
-    const groundY = 420;
-    const playerRadius = 20;
-    const maxAttempts = 3;
-    const gravity = 0.62;
-    const maxSpeed = 5.2;
-    const acceleration = 0.72;
-    const friction = 0.82;
-    const basePlatforms = [
-      { x: 300, y: 340, width: 150, height: 18 },
-      { x: 560, y: 300, width: 145, height: 18 },
-      { x: 820, y: 350, width: 180, height: 18 },
-      { x: 1110, y: 315, width: 160, height: 18 },
-      { x: 1400, y: 350, width: 170, height: 18 },
-      { x: 1680, y: 300, width: 180, height: 18 },
-      { x: 1980, y: 340, width: 160, height: 18 },
-      { x: 2240, y: 310, width: 180, height: 18 }
-    ];
-    const baseSpikes = [
-      { x: 470, width: 75 }, { x: 740, width: 65 },
-      { x: 1020, width: 78 }, { x: 1300, width: 70 },
-      { x: 1600, width: 65 }, { x: 1880, width: 75 },
-      { x: 2160, width: 70 }, { x: 2450, width: 75 }
-    ];
-    const baseStars = [
-      { x: 380, y: 292 }, { x: 635, y: 250 }, { x: 910, y: 300 },
-      { x: 1190, y: 265 }, { x: 1485, y: 300 }
-    ];
-    const palettes = [
-      ["#88d7ed", "#e0f4d4", "#4c9c62"],
-      ["#8ec5ff", "#f4e2c8", "#54875a"],
-      ["#a9d7df", "#f2e6d1", "#4b8d71"],
-      ["#f0b7a4", "#f5e6bf", "#648b55"],
-      ["#a5c7ff", "#e9e2f4", "#537f61"]
-    ];
-    const keys = new Set();
+    let scene;
+    let camera;
+    let renderer;
+    let clock;
     let player;
-    let worldWidth = 2600;
-    let cameraX = 0;
-    let platforms = [];
-    let spikes = [];
-    let stars;
-    let movingHazards = [];
-    let levelIndex = 1;
-    let attemptsRemaining = maxAttempts;
-    let state = "ready";
-    let lastFrame = 0;
-    let accumulator = 0;
-    let jumpQueuedUntil = 0;
-    let ballRotation = 0;
-    let squash = 1;
+    let playerBall;
+    let playerBand;
+    let playerShadow;
+    let stars = [];
+    let hazards = [];
+    let stageObjects = [];
+    let state = "menu";
+    let playerName = "";
+    let lane = 1;
+    let targetLane = 1;
+    let distance = 0;
+    let bestDistance = 0;
+    let stageStart = 0;
+    let level = 1;
+    let lives = MAX_LIVES;
+    let crystals = 0;
+    let score = 0;
+    let verticalVelocity = 0;
+    let grounded = true;
+    let slidingUntil = 0;
+    let boostUntil = 0;
+    let boostReadyAt = 0;
+    let invulnerableUntil = 0;
+    let lostScoreSubmitted = false;
     let animationTime = 0;
-    let dpr = 1;
+    let rendererReady = false;
+    let completedStages = 0;
 
-    function resizeCanvas() {
-      const bounds = canvas.getBoundingClientRect();
-      if (!bounds.width || !bounds.height) return;
-      dpr = Math.min(2.5, window.devicePixelRatio || 1);
-      canvas.width = Math.round(bounds.width * dpr);
-      canvas.height = Math.round(bounds.height * dpr);
-      const scale = bounds.height / viewHeight;
-      viewWidth = bounds.width / scale;
-      ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
-      cameraX = Math.min(cameraX, Math.max(0, worldWidth - viewWidth / getCameraZoom()));
-      draw();
+    const sceneMaterials = {
+      floor: new THREE.MeshStandardMaterial({ color: 0x102139, roughness: 0.9 }),
+      road: new THREE.MeshStandardMaterial({ color: 0x182d48, roughness: 0.76 }),
+      lane: new THREE.MeshStandardMaterial({ color: 0x82dcdb, emissive: 0x174947, emissiveIntensity: 0.8, roughness: 0.38 }),
+      red: new THREE.MeshStandardMaterial({ color: 0xee304d, roughness: 0.25, metalness: 0.1 }),
+      band: new THREE.MeshStandardMaterial({ color: 0xffa0a6, roughness: 0.25, metalness: 0.25 }),
+      white: new THREE.MeshStandardMaterial({ color: 0xfff6e6, roughness: 0.3 }),
+      dark: new THREE.MeshStandardMaterial({ color: 0x111b2c, roughness: 0.55 }),
+      spike: new THREE.MeshStandardMaterial({ color: 0xff526d, emissive: 0x80122e, emissiveIntensity: 0.45, metalness: 0.22, roughness: 0.3 }),
+      block: new THREE.MeshStandardMaterial({ color: 0x8849cb, emissive: 0x321154, emissiveIntensity: 0.4, metalness: 0.32, roughness: 0.31 }),
+      drone: new THREE.MeshStandardMaterial({ color: 0x50d8de, emissive: 0x146a78, emissiveIntensity: 0.65, metalness: 0.4, roughness: 0.25 }),
+      gold: new THREE.MeshStandardMaterial({ color: 0xffd45e, emissive: 0xe88711, emissiveIntensity: 0.9, metalness: 0.55, roughness: 0.19 }),
+      crystal: new THREE.MeshStandardMaterial({ color: 0x80fff0, emissive: 0x16c9bb, emissiveIntensity: 1.15, metalness: 0.16, roughness: 0.2 }),
+      portal: new THREE.MeshStandardMaterial({ color: 0x80f4e8, emissive: 0x23a699, emissiveIntensity: 1.15, metalness: 0.3, roughness: 0.2 }),
+      scenery: new THREE.MeshStandardMaterial({ color: 0x244365, roughness: 0.92 })
+    };
+
+    function isLeaderboardConfigured() {
+      return /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(SUPABASE_URL) && SUPABASE_ANON_KEY.length > 20;
     }
 
-    function getCameraZoom() {
-      return window.matchMedia("(orientation: portrait) and (max-width: 700px)").matches ? 0.78 : 1;
+    function sanitizeName(value) {
+      return Array.from(value.replace(/[\u0000-\u001f\u007f]/g, "").trim()).slice(0, 18).join("");
     }
 
-    function loadLevel() {
-      const difficulty = levelIndex - 1;
-      worldWidth = 2600 + difficulty * 110;
-      const worldScale = worldWidth / 2600;
-      platforms = basePlatforms.map((platform, index) => ({
-        ...platform,
-        x: platform.x * worldScale + difficulty * 4,
-        y: Math.max(295, Math.min(365, platform.y + (((index + difficulty) % 3) - 1) * (7 + Math.floor(difficulty / 3) * 2)))
-      }));
-      spikes = baseSpikes.map((spike, index) => ({
-        x: index === baseSpikes.length - 1
-          ? worldWidth - 300
-          : spike.x * worldScale + difficulty * 4 + (index % 2) * difficulty * 3,
-        width: spike.width + 18 + Math.floor(difficulty * 1.5) + (difficulty > 4 && index % 2 === 0 ? 10 : 0)
-      }));
-      stars = baseStars.map((star, index) => ({
-        x: star.x * worldScale + difficulty * 4,
-        y: Math.max(225, Math.min(310, star.y + (((index + difficulty) % 3) - 1) * 10)),
-        collected: false,
-        phase: index * 1.7
-      }));
-      movingHazards = Array.from({ length: Math.min(2 + Math.floor(difficulty / 2), 6) }, (_, index) => ({
-        x: (535 + index * 390) * worldScale + difficulty * 4,
-        baseY: 310 + (index % 2) * 35,
-        y: 310 + (index % 2) * 35,
-        phase: index * 1.9 + difficulty * 0.7,
-        speed: 1.7 + difficulty * 0.14,
-        range: 42 + difficulty * 2,
-        radius: 18 + Math.floor(difficulty / 4)
-      }));
-      levelElement.textContent = `${levelIndex} / 10`;
+    function localScores() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(LOCAL_SCORES_KEY) || "[]");
+        return Array.isArray(stored) ? stored.filter((entry) => typeof entry.name === "string" && Number.isFinite(entry.score)) : [];
+      } catch (error) {
+        console.error("تعذرت قراءة النتائج المحفوظة على هذا الجهاز.", error);
+        return [];
+      }
     }
 
-    function resetLevel() {
-      loadLevel();
-      player = { x: 80, y: groundY - playerRadius, vx: 0, vy: 0, onGround: true, coyoteTime: 0 };
-      cameraX = 0;
-      ballRotation = 0;
-      squash = 1;
-      starsElement.textContent = `0 / ${stars.length}`;
-      draw();
+    function renderLeaderboard(list, entries) {
+      list.replaceChildren();
+      if (!entries.length) {
+        const empty = document.createElement("li");
+        empty.className = "empty-leader";
+        empty.textContent = "لا توجد نتائج بعد. ابدأ أول مغامرة وسجّل اسمك في القائمة!";
+        list.append(empty);
+        return;
+      }
+      entries.slice(0, 10).forEach((entry, index) => {
+        const row = document.createElement("li");
+        row.className = "leader-row";
+        const rank = document.createElement("span");
+        rank.className = "leader-rank";
+        rank.textContent = ["🥇", "🥈", "🥉"][index] || `#${index + 1}`;
+        const name = document.createElement("span");
+        name.className = "leader-name";
+        name.textContent = entry.player_name || entry.name;
+        const points = document.createElement("span");
+        points.className = "leader-score";
+        points.textContent = formatter.format(entry.score);
+        row.append(rank, name, points);
+        list.append(row);
+      });
+    }
+
+    async function fetchGlobalScores() {
+      if (!isLeaderboardConfigured()) throw new Error("السجل العالمي يحتاج إعداد مشروع Supabase ومفتاحه العام.");
+      const response = await fetch(`${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/scores?select=player_name,score,level,created_at&order=score.desc,created_at.asc&limit=10`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+        signal: AbortSignal.timeout(9000)
+      });
+      if (!response.ok) throw new Error(`تعذر تحميل الترتيب العالمي (HTTP ${response.status}).`);
+      const entries = await response.json();
+      if (!Array.isArray(entries)) throw new Error("وصلت بيانات ترتيب غير صالحة من قاعدة البيانات.");
+      return entries;
+    }
+
+    async function refreshLeaderboard() {
+      leaderState.textContent = "جارٍ تحميل النتائج…";
+      try {
+        const entries = await fetchGlobalScores();
+        renderLeaderboard(leaderList, entries);
+        renderLeaderboard(resultLeaderList, entries);
+        leaderState.textContent = "🌐 عالمي";
+        leaderState.style.color = "#80f3d1";
+      } catch (error) {
+        console.error("تعذر تحديث لوحة المتصدرين.", error);
+        const local = localScores().sort((a, b) => b.score - a.score);
+        renderLeaderboard(leaderList, local);
+        renderLeaderboard(resultLeaderList, local);
+        leaderState.textContent = isLeaderboardConfigured() ? "غير متصل" : "محلي مؤقتًا";
+        leaderState.style.color = "#ffc87a";
+        const note = document.querySelector("#leader-note");
+        note.textContent = isLeaderboardConfigured()
+          ? `${error.message} نتائجك المحلية ظاهرة على هذا الجهاز فقط.`
+          : "النتائج الحالية محفوظة على هذا الجهاز فقط؛ أضف إعداد Supabase لتفعيل الترتيب العالمي.";
+      }
+    }
+
+    function updateScoreboard() {
+      const distancePoints = Math.floor(bestDistance * 5);
+      score = distancePoints + crystals * 250 + completedStages * 1000;
+      scoreElement.textContent = formatter.format(score);
+      crystalsElement.textContent = formatter.format(crystals);
+      levelElement.textContent = `${formatter.format(level)} / ${formatter.format(MAX_LEVEL)}`;
+      livesElement.textContent = formatter.format(lives);
+      distanceTag.textContent = `${String(Math.floor(bestDistance)).padStart(3, "0")} m`;
+      progressBar.style.width = `${Math.min(100, ((distance - stageStart) / LEVEL_LENGTH) * 100)}%`;
+      stageTag.textContent = `المرحلة ${formatter.format(level)} · ${LEVEL_NAMES[level - 1]}`;
+    }
+
+    function makeMesh(geometry, material, position, parent = scene) {
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(position.x, position.y, position.z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    function addStageObject(object) {
+      stageObjects.push(object);
+      scene.add(object);
+      return object;
+    }
+
+    function createPlayer() {
+      player = new THREE.Group();
+      playerBall = makeMesh(new THREE.SphereGeometry(0.92, 32, 24), sceneMaterials.red, { x: 0, y: 1, z: 0 }, player);
+      playerBand = makeMesh(new THREE.TorusGeometry(0.64, 0.075, 10, 48), sceneMaterials.band, { x: 0, y: 0.1, z: 0.65 }, player);
+      const leftEye = makeMesh(new THREE.SphereGeometry(0.16, 14, 12), sceneMaterials.white, { x: -0.28, y: 0.28, z: 0.72 }, player);
+      const rightEye = makeMesh(new THREE.SphereGeometry(0.16, 14, 12), sceneMaterials.white, { x: 0.16, y: 0.28, z: 0.82 }, player);
+      makeMesh(new THREE.SphereGeometry(0.075, 12, 10), sceneMaterials.dark, { x: -0.25, y: 0.26, z: 0.86 }, player);
+      makeMesh(new THREE.SphereGeometry(0.075, 12, 10), sceneMaterials.dark, { x: 0.19, y: 0.26, z: 0.96 }, player);
+      leftEye.castShadow = false;
+      rightEye.castShadow = false;
+      playerShadow = new THREE.Mesh(
+        new THREE.CircleGeometry(1.1, 28),
+        new THREE.MeshBasicMaterial({ color: 0x020816, transparent: true, opacity: 0.42, depthWrite: false })
+      );
+      playerShadow.rotation.x = -Math.PI / 2;
+      playerShadow.position.y = 0.025;
+      scene.add(playerShadow);
+      scene.add(player);
+    }
+
+    function buildWorld() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0d2542);
+      scene.fog = new THREE.Fog(0x0d2542, 35, 180);
+      camera = new THREE.PerspectiveCamera(58, 1, 0.1, 260);
+      camera.position.set(0, 6.2, 12);
+      const hemisphere = new THREE.HemisphereLight(0xa8ddff, 0x142032, 2.05);
+      scene.add(hemisphere);
+      const sun = new THREE.DirectionalLight(0xffefd5, 3.2);
+      sun.position.set(-8, 15, 8);
+      sun.castShadow = true;
+      sun.shadow.mapSize.set(1024, 1024);
+      sun.shadow.camera.left = -18;
+      sun.shadow.camera.right = 18;
+      sun.shadow.camera.top = 32;
+      sun.shadow.camera.bottom = -12;
+      sun.shadow.normalBias = 0.04;
+      scene.add(sun);
+
+      const ground = makeMesh(new THREE.PlaneGeometry(90, 2100), sceneMaterials.floor, { x: 0, y: -0.18, z: -930 });
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      const road = makeMesh(new THREE.PlaneGeometry(12.4, 2050), sceneMaterials.road, { x: 0, y: -0.08, z: -900 });
+      road.rotation.x = -Math.PI / 2;
+      for (const x of [-5.7, -1.6, 1.6, 5.7]) {
+        const rail = makeMesh(new THREE.BoxGeometry(x === -5.7 || x === 5.7 ? 0.12 : 0.045, 0.035, 2000), sceneMaterials.lane, { x, y: 0.015, z: -900 });
+        rail.castShadow = false;
+      }
+      for (let i = 0; i < 32; i += 1) {
+        const z = 16 - i * 62;
+        for (const side of [-1, 1]) {
+          const height = 2 + (i * 7 % 11) * 0.52;
+          const width = 2.5 + (i * 3 % 5) * 0.7;
+          const building = makeMesh(
+            new THREE.BoxGeometry(width, height, 3 + (i % 3)),
+            sceneMaterials.scenery,
+            { x: side * (10 + (i % 4) * 2), y: height / 2 - 0.1, z }
+          );
+          building.castShadow = false;
+        }
+      }
+      const particlePositions = [];
+      for (let i = 0; i < 300; i += 1) {
+        particlePositions.push((Math.random() - 0.5) * 190, 8 + Math.random() * 62, 20 - Math.random() * 1500);
+      }
+      const particleGeometry = new THREE.BufferGeometry();
+      particleGeometry.setAttribute("position", new THREE.Float32BufferAttribute(particlePositions, 3));
+      const particles = new THREE.Points(particleGeometry, new THREE.PointsMaterial({ color: 0x9bdcf5, size: 0.22, transparent: true, opacity: 0.75 }));
+      scene.add(particles);
+      createPlayer();
+      camera.lookAt(0, 1, -9);
+    }
+
+    function createObstacle(type, laneIndex, obstacleDistance) {
+      const group = new THREE.Group();
+      group.position.set(LANE_X[laneIndex], 0, -obstacleDistance);
+      if (type === "spike") {
+        const base = makeMesh(new THREE.ConeGeometry(0.88, 1.65, 5), sceneMaterials.spike, { x: 0, y: 0.8, z: 0 }, group);
+        base.rotation.y = Math.PI / 5;
+        makeMesh(new THREE.CylinderGeometry(0.78, 0.9, 0.22, 6), sceneMaterials.spike, { x: 0, y: 0.11, z: 0 }, group);
+      } else if (type === "block") {
+        const block = makeMesh(new THREE.BoxGeometry(1.9, 2.15, 1.8), sceneMaterials.block, { x: 0, y: 1.08, z: 0 }, group);
+        block.rotation.y = Math.PI / 4;
+        makeMesh(new THREE.BoxGeometry(1.15, 0.12, 1.95), sceneMaterials.portal, { x: 0, y: 1.45, z: 0.02 }, group);
+      } else {
+        const body = makeMesh(new THREE.SphereGeometry(0.68, 22, 16), sceneMaterials.drone, { x: 0, y: 2.55, z: 0 }, group);
+        body.scale.set(1.25, 0.8, 0.8);
+        makeMesh(new THREE.TorusGeometry(0.89, 0.065, 8, 30), sceneMaterials.white, { x: 0, y: 2.55, z: 0 }, group);
+        const light = makeMesh(new THREE.SphereGeometry(0.16, 12, 10), sceneMaterials.spike, { x: 0, y: 2.52, z: 0.55 }, group);
+        light.castShadow = false;
+      }
+      addStageObject(group);
+      hazards.push({ group, type, lane: laneIndex, distance: obstacleDistance, phase: Math.random() * Math.PI * 2 });
+    }
+
+    function createCrystal(laneIndex, crystalDistance) {
+      const group = new THREE.Group();
+      group.position.set(LANE_X[laneIndex], 1.85, -crystalDistance);
+      const stone = makeMesh(new THREE.OctahedronGeometry(0.52, 0), sceneMaterials.crystal, { x: 0, y: 0, z: 0 }, group);
+      stone.scale.set(0.82, 1.2, 0.82);
+      const orbit = makeMesh(new THREE.TorusGeometry(0.72, 0.045, 8, 28), sceneMaterials.portal, { x: 0, y: 0, z: 0 }, group);
+      orbit.rotation.x = Math.PI / 2;
+      orbit.castShadow = false;
+      addStageObject(group);
+      stars.push({ group, lane: laneIndex, distance: crystalDistance, collected: false, phase: Math.random() * 6 });
+    }
+
+    function createFinishGate(gateDistance) {
+      const gate = new THREE.Group();
+      gate.position.z = -gateDistance;
+      for (const x of [-5.1, 5.1]) {
+        makeMesh(new THREE.CylinderGeometry(0.16, 0.24, 6.2, 12), sceneMaterials.portal, { x, y: 3.1, z: 0 }, gate);
+        const cap = makeMesh(new THREE.SphereGeometry(0.32, 16, 12), sceneMaterials.gold, { x, y: 6.25, z: 0 }, gate);
+        cap.castShadow = false;
+      }
+      const top = makeMesh(new THREE.TorusGeometry(5.1, 0.13, 10, 64, Math.PI), sceneMaterials.gold, { x: 0, y: 6.1, z: 0 }, gate);
+      top.rotation.z = Math.PI;
+      addStageObject(gate);
+    }
+
+    function clearStageObjects() {
+      for (const object of stageObjects) {
+        scene.remove(object);
+        object.traverse((child) => {
+          if (child.isMesh) child.geometry.dispose();
+        });
+      }
+      stageObjects = [];
+      stars = [];
+      hazards = [];
+    }
+
+    function createLevel(levelNumber) {
+      clearStageObjects();
+      stageStart = (levelNumber - 1) * LEVEL_LENGTH;
+      const color = LEVEL_COLORS[(levelNumber - 1) % LEVEL_COLORS.length];
+      scene.fog.color.setHex(color);
+      scene.background.setHex(color);
+      const roadTone = new THREE.Color(color).multiplyScalar(0.3);
+      sceneMaterials.road.color.copy(roadTone);
+      const obstacleTypes = ["spike", "block", "drone"];
+      for (let index = 0; index < 7; index += 1) {
+        const waveDistance = stageStart + 20 + index * 14;
+        const hazardLane = Math.floor(Math.random() * 3);
+        const type = obstacleTypes[(index + levelNumber - 1) % obstacleTypes.length];
+        createObstacle(type, hazardLane, waveDistance);
+        if (levelNumber >= 4 && index % 3 === 2) {
+          const secondLane = (hazardLane + 1 + Math.floor(Math.random() * 2)) % 3;
+          createObstacle(index % 2 === 0 ? "spike" : "block", secondLane, waveDistance + 2.3);
+        }
+        const crystalLane = (hazardLane + 1 + Math.floor(Math.random() * 2)) % 3;
+        createCrystal(crystalLane, waveDistance + 6.5);
+        if (index % 2 === 0) createCrystal((crystalLane + 1) % 3, waveDistance + 9.2);
+      }
+      createFinishGate(stageStart + LEVEL_LENGTH - 3);
+      updateScoreboard();
+    }
+
+    function resizeRenderer() {
+      if (!renderer || !camera) return;
+      const bounds = world.getBoundingClientRect();
+      if (bounds.width < 1 || bounds.height < 1) return;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+      renderer.setSize(bounds.width, bounds.height, false);
+      camera.aspect = bounds.width / bounds.height;
+      camera.fov = bounds.width < 600 && bounds.height > bounds.width ? 66 : 58;
+      camera.updateProjectionMatrix();
+    }
+
+    function initializeRenderer() {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.12;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.domElement.setAttribute("aria-label", "شاهد المسار ثلاثي الأبعاد وتحكم بالكرة الحمراء");
+      world.append(renderer.domElement);
+      buildWorld();
+      resizeRenderer();
+      clock = new THREE.Clock();
+      rendererReady = true;
+      requestAnimationFrame(frame);
+    }
+
+    function changeLane(direction) {
+      if (state !== "playing") return;
+      targetLane = Math.max(0, Math.min(2, targetLane + direction));
+    }
+
+    function jump() {
+      if (state !== "playing" || !grounded) return;
+      grounded = false;
+      verticalVelocity = 10.9 + Math.min(level - 1, 5) * 0.12;
+    }
+
+    function slide() {
+      if (state === "playing" && grounded) slidingUntil = performance.now() + 760;
+    }
+
+    function dash() {
+      const now = performance.now();
+      if (state === "playing" && now >= boostReadyAt) {
+        boostUntil = now + 720;
+        boostReadyAt = now + 3600;
+        gameElement.classList.add("is-boosting");
+        window.setTimeout(() => gameElement.classList.remove("is-boosting"), 760);
+      }
     }
 
     function startGame() {
-      if (state === "next") {
-        levelIndex += 1;
-        resetLevel();
-      } else if (state === "won") {
-        levelIndex = 1;
-        attemptsRemaining = maxAttempts;
-        updateAttempts();
-        resetLevel();
-      } else if (state === "outOfAttempts") {
-        levelIndex = 1;
-        attemptsRemaining = maxAttempts;
-        updateAttempts();
-        resetLevel();
-      } else if (state === "ready") {
-        if (!player) resetLevel();
+      playerName = sanitizeName(nameInput.value);
+      if (!playerName) {
+        nameInput.setCustomValidity("اكتب اسمك أولًا عشان نسجل نتيجتك.");
+        nameInput.reportValidity();
+        return;
       }
+      nameInput.setCustomValidity("");
+      nameInput.value = playerName;
+      localStorage.setItem(PLAYER_NAME_KEY, playerName);
+      lane = 1;
+      targetLane = 1;
+      distance = 0;
+      bestDistance = 0;
+      level = 1;
+      lives = MAX_LIVES;
+      crystals = 0;
+      score = 0;
+      verticalVelocity = 0;
+      grounded = true;
+      slidingUntil = 0;
+      boostUntil = 0;
+      boostReadyAt = 0;
+      invulnerableUntil = 0;
+      completedStages = 0;
+      lostScoreSubmitted = false;
+      createLevel(level);
+      player.position.set(0, 1, 0);
+      player.rotation.set(0, 0, 0);
       state = "playing";
-      gameElement.classList.remove("is-losing");
-      overlay.classList.remove("is-loss");
       overlay.hidden = true;
-      lastFrame = performance.now();
-      accumulator = 0;
-      requestAnimationFrame(loop);
-    }
-
-    function showOverlay(title, message, buttonText) {
-      titleElement.textContent = title;
-      messageElement.textContent = message;
-      startButton.textContent = buttonText;
-      overlay.hidden = false;
-    }
-
-    function showLossOverlay(title, message, buttonText) {
-      showOverlay(title, message, buttonText);
       gameElement.classList.remove("is-losing");
-      overlay.classList.remove("is-loss");
+      document.querySelector("#pause-button").textContent = "⏸ إيقاف مؤقت";
+      updateScoreboard();
+    }
+
+    function showMenu() {
+      state = "menu";
+      menuPanel.hidden = false;
+      resultPanel.hidden = true;
+      overlay.hidden = false;
+      nameInput.value = playerName || localStorage.getItem(PLAYER_NAME_KEY) || "";
+      nameInput.focus({ preventScroll: true });
+    }
+
+    function showResult(title, message, eyebrow = "انتهى السباق") {
+      document.querySelector("#result-title").textContent = title;
+      document.querySelector("#result-message").textContent = message;
+      document.querySelector("#result-eyebrow").textContent = eyebrow;
+      menuPanel.hidden = true;
+      resultPanel.hidden = false;
+      overlay.hidden = false;
+      document.querySelector("#result-button").textContent = "العب مرة ثانية";
+      gameElement.classList.add("is-losing");
+    }
+
+    function saveLocalScore() {
+      const entries = localScores();
+      entries.push({ name: playerName, score, level, date: new Date().toISOString() });
+      entries.sort((a, b) => b.score - a.score);
+      try {
+        localStorage.setItem(LOCAL_SCORES_KEY, JSON.stringify(entries.slice(0, 10)));
+      } catch (error) {
+        console.error("تعذر حفظ النتيجة محليًا.", error);
+      }
+    }
+
+    async function submitScore() {
+      if (lostScoreSubmitted) return;
+      lostScoreSubmitted = true;
+      saveLocalScore();
+      submitState.dataset.kind = "";
+      if (!isLeaderboardConfigured()) {
+        submitState.textContent = "نتيجتك محفوظة على هذا الجهاز. ربط الترتيب العالمي ينتظر إعداد Supabase.";
+        await refreshLeaderboard();
+        return;
+      }
+      submitState.textContent = "جارٍ إرسال نتيجتك إلى لوحة الأبطال…";
+      try {
+        const response = await fetch(`${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/rpc/submit_score`, {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal"
+          },
+          body: JSON.stringify({ p_player_name: playerName, p_score: score, p_level: level }),
+          signal: AbortSignal.timeout(10000)
+        });
+        if (!response.ok) {
+          const details = await response.text();
+          throw new Error(`رفض الخادم حفظ النتيجة (HTTP ${response.status}): ${details.slice(0, 180)}`);
+        }
+        submitState.dataset.kind = "success";
+        submitState.textContent = "تم تسجيل نتيجتك في لوحة الأبطال العالمية! 🌍";
+        await refreshLeaderboard();
+      } catch (error) {
+        console.error("تعذر إرسال نتيجة اللاعب إلى السجل العالمي.", error);
+        submitState.dataset.kind = "error";
+        submitState.textContent = `${error.message} حفظنا نتيجتك على هذا الجهاز فقط.`;
+        await refreshLeaderboard();
+      }
+    }
+
+    function endRun(won) {
+      bestDistance = Math.max(bestDistance, distance);
+      updateScoreboard();
+      state = "result";
+      showResult(
+        won ? "أسطورة المسارات! 🏆" : "انتهى السباق!",
+        `${playerName}، نتيجتك ${formatter.format(score)} نقطة، وجمعت ${formatter.format(crystals)} بلورة وأنهيت ${formatter.format(won ? MAX_LEVEL : level)} من ${formatter.format(MAX_LEVEL)} مراحل.`,
+        won ? "أنهيت المغامرة كاملة" : "حاول تكسر رقمك"
+      );
+      void submitScore();
+    }
+
+    function takeHit() {
+      if (state !== "playing" || performance.now() < invulnerableUntil) return;
+      lives -= 1;
+      invulnerableUntil = performance.now() + 1700;
+      gameElement.classList.remove("is-losing");
       void gameElement.offsetWidth;
       gameElement.classList.add("is-losing");
-      overlay.classList.add("is-loss");
-    }
-
-    function updateAttempts() {
-      triesElement.textContent = `${attemptsRemaining} / ${maxAttempts}`;
-    }
-
-    function loseLife() {
-      attemptsRemaining = Math.max(0, attemptsRemaining - 1);
-      updateAttempts();
-      keys.clear();
-      resetLevel();
-      if (attemptsRemaining === 0) {
-        levelIndex = 1;
-        resetLevel();
-        state = "outOfAttempts";
-        showLossOverlay("خلصت محاولاتك يا بطل!", "يبدو أن الأشواك فازت بالجولة! اضغط للعودة إلى المرحلة الأولى وبدء جولة جديدة بثلاث محاولات.", "ابدأ من جديد");
+      updateScoreboard();
+      if (lives <= 0) {
+        endRun(false);
         return;
       }
-      state = "ready";
-      const taunts = [
-        "الكرة طارت أكثر من اللازم! خذ نفسًا وحاول من جديد.",
-        "الأشواك أخذت نقطة هذه المرة! باقي لك فرصة، انتبه للقفزة.",
-        "كان قريبًا... تقريبًا! حاول توقيت القفزة بشكل أفضل."
-      ];
-      showLossOverlay("أوه! راحت محاولة", `${taunts[maxAttempts - attemptsRemaining - 1]} بقيت ${attemptsRemaining} من ${maxAttempts} محاولات. المرحلة ${levelIndex} بانتظارك.`, "حاول مرة أخرى");
+      state = "hit";
+      showResult("أوه! راحت محاولة", `بقيت لك ${formatter.format(lives)} محاولات. خذ نفسًا، وبدّل مسارك قبل الفخ التالي.`, "الكرة تصمد بثلاث محاولات");
+      document.querySelector("#result-button").textContent = "أكمل السباق";
     }
 
-    function winGame() {
-      if (levelIndex < 10) {
-        state = "next";
-        showOverlay(`أنهيت المرحلة ${levelIndex}!`, `جمعت ${stars.filter((star) => star.collected).length} من ${stars.length} نجوم. المحاولات المتبقية: ${attemptsRemaining}. استعد للتحدي التالي!`, "المرحلة التالية");
-      } else {
-        state = "won";
-        showOverlay("فزت بكل المراحل!", `رائع! أنهيت المراحل العشر وجمعت ${stars.filter((star) => star.collected).length} من ${stars.length} نجوم في المرحلة الأخيرة.`, "العب من جديد");
-      }
-    }
-
-    function update(step) {
-      animationTime += step / 60;
-      movingHazards.forEach((hazard) => {
-        hazard.y = hazard.baseY + Math.sin(animationTime * hazard.speed + hazard.phase) * hazard.range;
-      });
-      const left = keys.has("ArrowLeft") || keys.has("a") || keys.has("A");
-      const right = keys.has("ArrowRight") || keys.has("d") || keys.has("D");
-      const jump = keys.has("ArrowUp") || keys.has("w") || keys.has("W") || keys.has(" ");
-
-      if (left !== right) player.vx += (left ? -acceleration : acceleration) * step;
-      else player.vx *= Math.pow(friction, step);
-      player.vx = Math.max(-maxSpeed, Math.min(maxSpeed, player.vx));
-
-      if (player.onGround) player.coyoteTime = 0.11;
-      else player.coyoteTime = Math.max(0, player.coyoteTime - step / 60);
-
-      if (jumpQueuedUntil > performance.now() && player.coyoteTime > 0) {
-        player.vy = -12.8;
-        player.onGround = false;
-        player.coyoteTime = 0;
-        jumpQueuedUntil = 0;
-      }
-
-      const previousBottom = player.y + playerRadius;
-      player.x += player.vx * step;
-      player.x = Math.max(playerRadius, Math.min(worldWidth - playerRadius, player.x));
-      player.vy += gravity * step;
-      if (!jump && player.vy < -4) player.vy *= Math.pow(0.94, step);
-      player.y += player.vy * step;
-      player.onGround = false;
-
-      if (player.y + playerRadius >= groundY && previousBottom <= groundY + 4) {
-        player.y = groundY - playerRadius;
-        player.vy = 0;
-        player.onGround = true;
-        squash = 0.78;
-      }
-
-      for (const platform of platforms) {
-        const overlapsX = player.x + playerRadius > platform.x && player.x - playerRadius < platform.x + platform.width;
-        const crossedTop = previousBottom <= platform.y && player.y + playerRadius >= platform.y;
-        if (overlapsX && crossedTop && player.vy >= 0) {
-          player.y = platform.y - playerRadius;
-          player.vy = 0;
-          player.onGround = true;
-          squash = 0.78;
-        }
-      }
-
-      squash += (1 - squash) * Math.min(1, 0.22 * step);
-      ballRotation += (player.vx * step) / playerRadius;
-
-      for (const spike of spikes) {
-        const overlaps = player.x + playerRadius > spike.x && player.x - playerRadius < spike.x + spike.width;
-        if (overlaps && player.y + playerRadius > groundY - 29) {
-          loseLife();
-          return;
-        }
-      }
-
-      for (const hazard of movingHazards) {
-        if (Math.hypot(player.x - hazard.x, player.y - hazard.y) < playerRadius + hazard.radius - 3) {
-          loseLife();
-          return;
-        }
-      }
-
-      if (player.y > viewHeight + playerRadius) {
-        loseLife();
+    function completeLevel() {
+      completedStages += 1;
+      if (level >= MAX_LEVEL) {
+        level = MAX_LEVEL;
+        endRun(true);
         return;
       }
-
-      for (const star of stars) {
-        const starY = star.y + Math.sin(animationTime * 2.4 + star.phase) * 5;
-        if (!star.collected && Math.hypot(player.x - star.x, player.y - starY) < playerRadius + 15) {
-          star.collected = true;
-          starsElement.textContent = `${stars.filter((item) => item.collected).length} / ${stars.length}`;
-        }
-      }
-
-      if (player.x >= worldWidth - 75) winGame();
-      const visibleWorldWidth = viewWidth / getCameraZoom();
-      const targetCameraX = Math.max(0, Math.min(worldWidth - visibleWorldWidth, player.x - visibleWorldWidth * 0.36));
-      cameraX += (targetCameraX - cameraX) * Math.min(1, 0.12 * step);
+      level += 1;
+      createLevel(level);
+      updateScoreboard();
+      stageTag.textContent = `المرحلة ${formatter.format(level)} · ${LEVEL_NAMES[level - 1]}`;
     }
 
-    function drawStar(x, y, radius) {
-      ctx.beginPath();
-      for (let i = 0; i < 10; i += 1) {
-        const angle = -Math.PI / 2 + i * Math.PI / 5;
-        const r = i % 2 === 0 ? radius : radius * 0.45;
-        const px = x + Math.cos(angle) * r;
-        const py = y + Math.sin(angle) * r;
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    function draw() {
-      if (!player || !stars) return;
-      const palette = palettes[(levelIndex - 1) % palettes.length];
-      const sky = ctx.createLinearGradient(0, 0, 0, viewHeight);
-      sky.addColorStop(0, palette[0]);
-      sky.addColorStop(1, palette[1]);
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, viewWidth, viewHeight);
-
-      ctx.fillStyle = "#c0e5cf";
-      for (let i = 0; i < 8; i += 1) {
-        const x = ((i * 170 - cameraX * 0.2 + animationTime * (8 + i % 3)) % (viewWidth + 220)) - 80;
-        ctx.beginPath();
-        ctx.arc(x, 370, 115 + (i % 3) * 18, Math.PI, 0);
-        ctx.fill();
-      }
-
-      const zoom = getCameraZoom();
-      ctx.save();
-      ctx.translate(viewWidth / 2, viewHeight / 2);
-      ctx.scale(zoom, zoom);
-      ctx.translate(-viewWidth / 2, -viewHeight / 2);
-      ctx.translate(-cameraX, 0);
-      ctx.fillStyle = palette[2];
-      ctx.fillRect(0, groundY, worldWidth, viewHeight + viewHeight * (1 - zoom) / zoom - groundY);
-      ctx.fillStyle = "#73bd6b";
-      ctx.fillRect(0, groundY, worldWidth, 12);
-
-      for (const platform of platforms) {
-        ctx.fillStyle = "#855a3d";
-        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-        ctx.fillStyle = "#79c96d";
-        ctx.fillRect(platform.x, platform.y, platform.width, 7);
-      }
-
-      ctx.fillStyle = "#ed5260";
-      for (const spike of spikes) {
-        const count = Math.ceil(spike.width / 25);
-        const width = spike.width / count;
-        for (let i = 0; i < count; i += 1) {
-          ctx.beginPath();
-          ctx.moveTo(spike.x + i * width, groundY);
-          ctx.lineTo(spike.x + i * width + width / 2, groundY - 30);
-          ctx.lineTo(spike.x + (i + 1) * width, groundY);
-          ctx.closePath();
-          ctx.fill();
+    function collectCrystals() {
+      for (const crystal of stars) {
+        if (crystal.collected || Math.round(lane) !== crystal.lane) continue;
+        if (Math.abs(distance - crystal.distance) < 1.45 && player.position.y < 3.9) {
+          crystal.collected = true;
+          crystal.group.visible = false;
+          crystals += 1;
+          updateScoreboard();
         }
       }
-
-      for (const star of stars) {
-        if (star.collected) continue;
-        const bobY = star.y + Math.sin(animationTime * 2.4 + star.phase) * 5;
-        ctx.fillStyle = "#ffd14f";
-        ctx.shadowColor = "#ffca3a";
-        ctx.shadowBlur = 14 + Math.sin(animationTime * 4 + star.phase) * 3;
-        drawStar(star.x, bobY, 15 + Math.sin(animationTime * 3 + star.phase) * 1.5);
-        ctx.shadowBlur = 0;
-      }
-
-      for (const hazard of movingHazards) {
-        ctx.save();
-        ctx.translate(hazard.x, hazard.y);
-        ctx.rotate(animationTime * 2.4);
-        ctx.shadowColor = "#742b47";
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = "#c33559";
-        ctx.beginPath();
-        ctx.arc(0, 0, hazard.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = "#ffd3d8";
-        ctx.lineWidth = 3;
-        for (let i = 0; i < 8; i += 1) {
-          ctx.rotate(Math.PI / 4);
-          ctx.beginPath();
-          ctx.moveTo(hazard.radius - 3, 0);
-          ctx.lineTo(hazard.radius + 7, 0);
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
-
-      ctx.fillStyle = "#f5f7ed";
-      ctx.fillRect(worldWidth - 82, groundY - 135, 7, 135);
-      ctx.fillStyle = "#ef5264";
-      ctx.beginPath();
-      ctx.moveTo(worldWidth - 75, groundY - 132);
-      ctx.lineTo(worldWidth - 15, groundY - 112);
-      ctx.lineTo(worldWidth - 75, groundY - 91);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.fillStyle = "#d93042";
-      ctx.shadowColor = "#ad2434";
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.ellipse(player.x, player.y, playerRadius / squash, playerRadius * squash, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.save();
-      ctx.translate(player.x, player.y);
-      ctx.rotate(ballRotation);
-      ctx.strokeStyle = "#f56a75";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(0, 0, playerRadius * 0.72, -0.9, 0.9);
-      ctx.stroke();
-      ctx.restore();
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.arc(player.x + 6, player.y - 6, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#25364a";
-      ctx.beginPath();
-      ctx.arc(player.x + 7, player.y - 6, 2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
     }
 
-    function loop(timestamp) {
+    function checkHazards(now) {
+      if (now < invulnerableUntil) return;
+      const isSliding = now < slidingUntil;
+      for (const hazard of hazards) {
+        if (hazard.lane !== Math.round(lane) || Math.abs(distance - hazard.distance) > 1.5) continue;
+        if (hazard.type === "drone" && isSliding) continue;
+        if ((hazard.type === "spike" && player.position.y > 1.65) ||
+            (hazard.type === "block" && player.position.y > 2.25)) continue;
+        takeHit();
+        return;
+      }
+    }
+
+    function update(delta) {
       if (state !== "playing") return;
-      const elapsed = Math.min(50, timestamp - lastFrame);
-      lastFrame = timestamp;
-      accumulator += elapsed;
-      while (accumulator >= 1000 / 60 && state === "playing") {
-        update(1);
-        accumulator -= 1000 / 60;
+      const now = performance.now();
+      const isBoosting = now < boostUntil;
+      const speed = 13.2 + Math.min(level - 1, 9) * 0.82 + (isBoosting ? 7 : 0);
+      distance += speed * delta;
+      bestDistance = Math.max(bestDistance, distance);
+      lane += (targetLane - lane) * Math.min(1, delta * 13);
+      player.position.x += (LANE_X[Math.round(targetLane)] - player.position.x) * Math.min(1, delta * 13);
+      player.position.z = -distance;
+      if (!grounded) {
+        verticalVelocity -= 25 * delta;
+        player.position.y += verticalVelocity * delta;
+        if (player.position.y <= 1) {
+          player.position.y = 1;
+          verticalVelocity = 0;
+          grounded = true;
+        }
+      } else {
+        player.position.y = 1 + Math.sin(animationTime * 13) * 0.035;
       }
-      draw();
-      if (state === "playing") requestAnimationFrame(loop);
+      const isSliding = now < slidingUntil;
+      const squash = isSliding ? 0.56 : 1;
+      playerBall.scale.set(1, squash, 1);
+      playerBand.position.y = isSliding ? -0.27 : 0.1;
+      player.rotation.x += speed * delta * 0.72;
+      player.visible = now >= invulnerableUntil || Math.floor(now / 90) % 2 === 0;
+      playerShadow.position.x = player.position.x;
+      playerShadow.position.z = player.position.z;
+      playerShadow.material.opacity = Math.max(0.12, 0.42 - (player.position.y - 1) * 0.12);
+      for (const hazard of hazards) {
+        if (hazard.type === "drone") {
+          hazard.group.position.x = LANE_X[hazard.lane] + Math.sin(animationTime * 2.5 + hazard.phase) * 0.22;
+          hazard.group.rotation.y = animationTime * 1.5 + hazard.phase;
+        }
+      }
+      for (const crystal of stars) {
+        if (crystal.collected) continue;
+        crystal.group.rotation.y = animationTime * 1.8 + crystal.phase;
+        crystal.group.position.y = 1.82 + Math.sin(animationTime * 3 + crystal.phase) * 0.17;
+      }
+      collectCrystals();
+      checkHazards(now);
+      if (state !== "playing") return;
+      if (distance >= level * LEVEL_LENGTH) completeLevel();
+      if (Math.floor(animationTime * 2) !== Math.floor((animationTime - delta) * 2)) updateScoreboard();
+      const cameraTarget = new THREE.Vector3(player.position.x * 0.48, player.position.y + 5.3, player.position.z + 11.5);
+      camera.position.x += (cameraTarget.x - camera.position.x) * Math.min(1, delta * 5);
+      camera.position.y += (cameraTarget.y - camera.position.y) * Math.min(1, delta * 5);
+      camera.position.z = cameraTarget.z;
+      camera.lookAt(player.position.x * 0.25, player.position.y + 1.25, player.position.z - 10);
+    }
+
+    function frame() {
+      if (!rendererReady) return;
+      const delta = Math.min(clock.getDelta(), 0.045);
+      animationTime += delta;
+      update(delta);
+      renderer.render(scene, camera);
+      requestAnimationFrame(frame);
+    }
+
+    function resumeRun() {
+      if (state !== "hit" && state !== "paused") return;
+      if (state === "hit") {
+        distance = Math.max(stageStart + 1, Math.min(distance, level * LEVEL_LENGTH - 6));
+        player.position.set(LANE_X[Math.round(targetLane)], 1, -distance);
+        verticalVelocity = 0;
+        grounded = true;
+        invulnerableUntil = performance.now() + 1500;
+      }
+      state = "playing";
+      overlay.hidden = true;
+      gameElement.classList.remove("is-losing");
+      document.querySelector("#pause-button").textContent = "⏸ إيقاف مؤقت";
+    }
+
+    function togglePause() {
+      if (state === "playing") {
+        state = "paused";
+        document.querySelector("#pause-button").textContent = "▶ متابعة";
+        showResult("وقفة محارب ⏸", "خذ وقتك، المسار ينتظرك. اضغط متابعة عشان تكمل مغامرتك.", "توقف مؤقت");
+        document.querySelector("#result-button").textContent = "تابع اللعب";
+      } else if (state === "paused") {
+        resumeRun();
+      }
+    }
+
+    function handleAction(action, pressed = true) {
+      if (!pressed) return;
+      if (action === "left") changeLane(-1);
+      if (action === "right") changeLane(1);
+      if (action === "jump") jump();
+      if (action === "slide") slide();
+      if (action === "dash") dash();
     }
 
     document.addEventListener("keydown", (event) => {
-      if (["ArrowLeft", "ArrowRight", "ArrowUp", " "].includes(event.key)) event.preventDefault();
-      if (!keys.has(event.key) && ["ArrowUp", "w", "W", " "].includes(event.key)) {
-        jumpQueuedUntil = performance.now() + 150;
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(event.key)) event.preventDefault();
+      if (event.repeat) return;
+      if (event.target instanceof HTMLInputElement) {
+        if (event.key === "Enter") return;
+        return;
       }
-      keys.add(event.key);
-      if (state === "ready" && ["ArrowLeft", "ArrowRight", "ArrowUp", " ", "a", "A", "d", "D", "w", "W"].includes(event.key)) {
-        startGame();
-      }
-    });
-
-    document.addEventListener("keyup", (event) => {
-      keys.delete(event.key);
+      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") changeLane(-1);
+      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") changeLane(1);
+      if (event.key === "ArrowUp" || event.key.toLowerCase() === "w" || event.key === " ") jump();
+      if (event.key === "ArrowDown" || event.key.toLowerCase() === "s") slide();
+      if (event.key === "Shift") dash();
+      if (event.key === "Escape") togglePause();
     });
     window.addEventListener("blur", () => {
-      keys.clear();
-      document.querySelectorAll(".touch-controls button").forEach((button) => button.classList.remove("is-pressed"));
+      document.querySelectorAll(".control-row button").forEach((button) => button.classList.remove("is-pressed"));
     });
-    document.querySelectorAll(".touch-controls button").forEach((button) => {
-      const key = button.dataset.key;
-      const release = (event) => {
-        event.preventDefault();
-        keys.delete(key);
-        button.classList.remove("is-pressed");
-      };
+
+    document.querySelectorAll(".control-row button").forEach((button) => {
+      const action = button.dataset.action;
       button.addEventListener("pointerdown", (event) => {
         event.preventDefault();
         button.setPointerCapture(event.pointerId);
         button.classList.add("is-pressed");
-        keys.add(key);
-        if (key === " ") jumpQueuedUntil = performance.now() + 150;
-        if (state === "ready") startGame();
+        handleAction(action);
       });
+      const release = () => button.classList.remove("is-pressed");
       button.addEventListener("pointerup", release);
       button.addEventListener("pointercancel", release);
-      button.addEventListener("lostpointercapture", () => {
-        keys.delete(key);
-        button.classList.remove("is-pressed");
-      });
+      button.addEventListener("lostpointercapture", release);
       button.addEventListener("contextmenu", (event) => event.preventDefault());
     });
-    window.addEventListener("resize", resizeCanvas);
-    startButton.addEventListener("click", startGame);
-    document.querySelector("#fullscreen").addEventListener("click", async () => {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else if (document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen();
-      }
+
+    nameForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      startGame();
     });
-    document.addEventListener("fullscreenchange", () => {
-      document.querySelector("#fullscreen").textContent = document.fullscreenElement ? "⛶ خروج من الشاشة الكاملة" : "⛶ ملء الشاشة";
-      resizeCanvas();
+    nameInput.addEventListener("input", () => nameInput.setCustomValidity(""));
+    document.querySelector("#result-button").addEventListener("click", () => {
+      if (state === "hit" || state === "paused") resumeRun();
+      else startGame();
     });
-    document.querySelector("#restart").addEventListener("click", () => {
-      if (state === "playing") {
-        loseLife();
-        return;
-      }
-      state = "ready";
-      resetLevel();
-      showOverlay(`المرحلة ${levelIndex}`, "لديك 3 محاولات فقط. استخدم ← و → للحركة و↑ أو مسافة للقفز، واجمع النجوم وتجنب الأشواك والأعداء المتحركين!", "ابدأ المرحلة");
+    document.querySelector("#menu-button").addEventListener("click", showMenu);
+    document.querySelector("#pause-button").addEventListener("click", togglePause);
+    window.addEventListener("resize", resizeRenderer);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && state === "playing") togglePause();
     });
 
-    resetLevel();
-    resizeCanvas();
-    if (window.matchMedia("(pointer: coarse), (max-width: 700px)").matches) {
-      startGame();
+    try {
+      initializeRenderer();
+      const savedName = localStorage.getItem(PLAYER_NAME_KEY);
+      if (savedName) {
+        playerName = sanitizeName(savedName);
+        nameInput.value = playerName;
+      }
+      createLevel(1);
+      void refreshLeaderboard();
+      if (!isLeaderboardConfigured()) {
+        setupNotice.hidden = false;
+        setupNotice.textContent = "اللعبة الثلاثية الأبعاد جاهزة، لكن لوحة الترتيب العالمية تحتاج إعداد Supabase؛ ملف supabase-schema.sql يحتوي إعداد قاعدة البيانات.";
+      }
+    } catch (error) {
+      console.error("تعذر تشغيل المشهد ثلاثي الأبعاد.", error);
+      setupNotice.hidden = false;
+      setupNotice.textContent = `تعذر تشغيل الرسوم ثلاثية الأبعاد: ${error.message}. تأكد من الاتصال بالإنترنت ودعم WebGL في المتصفح.`;
     }
-    document.querySelector("#fullscreen").hidden = !document.documentElement.requestFullscreen;
   </script>
 </body>
 </html>
