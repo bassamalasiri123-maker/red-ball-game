@@ -22,12 +22,14 @@
 1. أنشئ مشروعًا مجانيًا في Supabase.
 2. افتح SQL Editor في لوحة المشروع، والصق محتويات supabase-schema.sql، ثم شغّلها.
 3. من إعدادات API في Supabase، انسخ Project URL وPublishable (anon) key.
-4. ضع القيمتين في SUPABASE_URL وSUPABASE_ANON_KEY أعلى ملف index.html.
-   المفتاح publishable/anon مصمم للاستخدام في المتصفح؛ لا تضع service_role أو
-   أي مفتاح سري في ملفات الموقع.
+4. ضع Project URL وPublishable key في SUPABASE_URL وSUPABASE_ANON_KEY
+   أعلى ملف index.html. المفتاح Publishable مصمم للاستخدام في المتصفح؛ لا تضع
+   service_role أو أي مفتاح سري في ملفات الموقع.
 5. انشر index.html وsupabase-schema.sql على GitHub Pages.
 
-من دون هذه الخطوات، تبقى لوحة الترتيب محلية على الجهاز ولا تُشارك بين اللاعبين.
+المشروع الحالي مرتبط بقاعدة Supabase فعلية مع سياسات RLS وواجهة آمنة لحفظ
+أفضل نتيجة لكل اسم. ملف SQL ينشئها بأمان عند إعداد مشروع جديد. ضع حدًا للنقاط
+المقبولة في جهة الخادم إذا تغيّرت قواعد احتساب النقاط في اللعبة.
 
 للتطوير:
 - افتح index.html في محرر نصوص مثل Visual Studio Code.
