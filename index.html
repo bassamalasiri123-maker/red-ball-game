@@ -188,6 +188,16 @@
     .welcome-title { margin: 0 !important; font-size: clamp(1.9rem, 5.2vw, 2.8rem) !important; letter-spacing: -.04em; }
     .welcome-title span { color: #79eee2; }
     .panel-copy { margin: 0 0 18px; color: #bdcadd; line-height: 1.75; }
+    .objectives-list {
+      display: grid;
+      gap: 8px;
+      margin: 0 0 18px;
+      padding: 0 0 0 18px;
+      color: #d8eafc;
+      line-height: 1.7;
+      font-size: .8rem;
+    }
+    .objectives-list li::marker { color: #7de8d8; }
     .name-label { display: block; margin-bottom: 7px; color: #d8e4f4; font-size: .85rem; font-weight: 700; }
     .name-row { display: flex; gap: 8px; }
     .stage-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 12px 0; }
@@ -204,6 +214,7 @@
       text-align: right;
     }
     .stage-selectors select { display: block; margin-top: 6px; }
+    .stage-selectors label[for="ball-shape"] { grid-column: 1 / -1; }
     input:focus, .stage-selectors select:focus { border-color: #6de8dc; box-shadow: 0 0 0 3px #6de8dc22; }
     .name-row input { flex: 1; }
     button {
@@ -367,6 +378,13 @@
                 </div>
               </div>
               <p class="panel-copy">انطلق عبر ٥٠ مرحلة جبلية في أربعة أقسام متصاعدة الصعوبة. اختر نقطة البداية بحرية، واستخدم القوى، وتجاوز الحراس، وأكمل مهامك اليومية.</p>
+              <ul class="objectives-list" aria-label="أهداف اللعبة">
+                <li>الكرة تحتاج إلى تسريع وتجاوز العوائق عبر ٣ مسارات متحركة في كل مرحلة.</li>
+                <li>تزداد صعوبة المرحلة كلما ارتفعت المسافة، ويُستدعى الحارس عند نهاية كل قسم.</li>
+                <li>يرتفع التقدم عندما تجمع البلورات وتكمل المسافة وتخترق المراحل بنجاح.</li>
+                <li>أكمل الأهداف اليومية وافتح الشارات والإنجازات التي تُحفظ محليًا.</li>
+                <li>نظام القوة يضمن الدفاع من الضربة، وجذب البلورات القريبة، وتخفيف سرعة الحركة.</li>
+              </ul>
               <form id="name-form">
                 <label class="name-label" for="player-name">اسمك في التصنيف العالمي — اختياري</label>
                 <div class="name-row">
@@ -384,6 +402,20 @@
                   </label>
                   <label for="stage-select">اختر المرحلة
                     <select id="stage-select" name="stage"></select>
+                  </label>
+                  <label for="ball-shape">شكل الكرة
+                    <select id="ball-shape" name="ballShape">
+                      <option value="classic">١ · الكرة الكلاسيكية</option>
+                      <option value="faceted">٢ · الكرة البلورية</option>
+                      <option value="ruby">٣ · جوهرة الياقوت</option>
+                      <option value="diamond">٤ · الماسة</option>
+                      <option value="prism">٥ · المنشور</option>
+                      <option value="cube">٦ · المكعب</option>
+                      <option value="knot">٧ · الكرة الملتفة</option>
+                      <option value="ring">٨ · الحلقة</option>
+                      <option value="capsule">٩ · الكبسولة</option>
+                      <option value="spike">١٠ · النجم الشائك</option>
+                    </select>
                   </label>
                 </div>
               </form>
@@ -462,16 +494,19 @@
     const LOCAL_SCORES_KEY = "red-ball-3d-local-scores";
     const DAILY_PROGRESS_KEY = "red-ball-3d-daily-v1";
     const ACHIEVEMENTS_KEY = "red-ball-3d-achievements-v1";
+    const BALL_SHAPE_KEY = "red-ball-3d-ball-shape";
     const LEVEL_LENGTH = 400;
     const MAX_LEVEL = 50;
+    const MIN_STAGE_WAVES = 18;
+    const MAX_STAGE_WAVES = 36;
     const WORLD_LENGTH = LEVEL_LENGTH * MAX_LEVEL + 200;
     const MAX_LIVES = 3;
     const BOSS_LEVELS = [13, 26, 38, 50];
     const TIERS = [
-      { name: "البداية", first: 1, last: 13, waves: 18 },
-      { name: "التحدي", first: 14, last: 26, waves: 24 },
-      { name: "الخبرة", first: 27, last: 38, waves: 30 },
-      { name: "الأساطير", first: 39, last: 50, waves: 36 }
+      { name: "البداية", first: 1, last: 13 },
+      { name: "التحدي", first: 14, last: 26 },
+      { name: "الخبرة", first: 27, last: 38 },
+      { name: "الأساطير", first: 39, last: 50 }
     ];
     const DAILY_MISSIONS = [
       { id: "crystals", label: "اجمع ١٥ بلورة", target: 15, reward: "شارة البلورات" },
@@ -485,6 +520,18 @@
       { id: "guardian-slayer", label: "قاهر الحراس", detail: "اهزم أول حارس", key: "bosses", target: 1 },
       { id: "legendary-runner", label: "عدّاء أسطوري", detail: "اهزم الحراس الأربعة", key: "bosses", target: 4 },
       { id: "daily-hero", label: "بطل المهام", detail: "أكمل ٥ مهام يومية", key: "dailyCompletions", target: 5 }
+    ];
+    const BALL_SHAPES = [
+      { id: "classic", material: "red", hasFace: true, geometry: () => new THREE.SphereGeometry(BALL_RADIUS, 40, 32) },
+      { id: "faceted", material: "ruby", geometry: () => new THREE.IcosahedronGeometry(BALL_RADIUS, 1) },
+      { id: "ruby", material: "ruby", geometry: () => new THREE.DodecahedronGeometry(BALL_RADIUS * 1.04, 0) },
+      { id: "diamond", material: "crystal", geometry: () => new THREE.OctahedronGeometry(BALL_RADIUS * 1.16, 0) },
+      { id: "prism", material: "gold", geometry: () => new THREE.ConeGeometry(BALL_RADIUS * 0.94, BALL_RADIUS * 1.8, 7) },
+      { id: "cube", material: "blue", geometry: () => new THREE.BoxGeometry(BALL_RADIUS * 1.5, BALL_RADIUS * 1.5, BALL_RADIUS * 1.5) },
+      { id: "knot", material: "violet", geometry: () => new THREE.TorusKnotGeometry(0.57, 0.24, 72, 10) },
+      { id: "ring", material: "gold", geometry: () => new THREE.TorusGeometry(0.62, 0.29, 18, 36) },
+      { id: "capsule", material: "green", geometry: () => new THREE.CapsuleGeometry(0.59, 0.42, 8, 24) },
+      { id: "spike", material: "red", geometry: () => new THREE.SphereGeometry(BALL_RADIUS * 0.7, 16, 12) }
     ];
     const ROAD_SURFACE_Y = -0.08;
     const BALL_RADIUS = 0.92;
@@ -505,6 +552,7 @@
     const nameForm = document.querySelector("#name-form");
     const tierSelect = document.querySelector("#tier-select");
     const stageSelect = document.querySelector("#stage-select");
+    const ballShapeSelect = document.querySelector("#ball-shape");
     const playButton = document.querySelector("#play-button");
     const scoreElement = document.querySelector("#score");
     const crystalsElement = document.querySelector("#crystals");
@@ -531,7 +579,9 @@
     let clock;
     let player;
     let playerBall;
+    let playerFace;
     let playerShadow;
+    let shapeDecorations = [];
     let stars = [];
     let hazards = [];
     let powerups = [];
@@ -568,6 +618,8 @@
     let slowUntil = 0;
     let dailySaveDistanceAt = 0;
     let dailyUiProgress = { crystals: -1, distance: -1, stages: -1 };
+    let selectedBallShape = loadBallShapePreference();
+    let audioContext;
 
     function localDateKey() {
       const now = new Date();
@@ -584,6 +636,107 @@
         console.error("تعذرت قراءة تقدم المهام اليومية.", error);
       }
       return { date: localDateKey(), crystals: 0, distance: 0, stages: 0, claimed: [] };
+    }
+
+    function loadBallShapePreference() {
+      try {
+        const stored = localStorage.getItem(BALL_SHAPE_KEY);
+        return BALL_SHAPES.some((shape) => shape.id === stored) ? stored : "classic";
+      } catch (error) {
+        console.error("تعذر قراءة شكل الكرة المحفوظ.", error);
+        return "classic";
+      }
+    }
+
+    function setBallShape(shapeId) {
+      const shape = BALL_SHAPES.find((option) => option.id === shapeId);
+      if (!shape) throw new Error(`شكل كرة غير معروف: ${shapeId}`);
+      selectedBallShape = shape.id;
+      ballShapeSelect.value = selectedBallShape;
+      if (playerBall) {
+        clearBallDecorations();
+        playerBall.geometry.dispose();
+        playerBall.geometry = shape.geometry();
+        playerBall.material = sceneMaterials[shape.material];
+        playerFace.visible = Boolean(shape.hasFace);
+        if (shape.id === "spike") addBallSpikes(shape.material);
+      }
+      try {
+        localStorage.setItem(BALL_SHAPE_KEY, selectedBallShape);
+      } catch (error) {
+        console.error("تعذر حفظ شكل الكرة المختار.", error);
+      }
+    }
+
+    function clearBallDecorations() {
+      for (const decoration of shapeDecorations) {
+        playerBall.remove(decoration);
+        decoration.geometry.dispose();
+      }
+      shapeDecorations = [];
+    }
+
+    function addBallSpikes(materialName) {
+      const up = new THREE.Vector3(0, 1, 0);
+      for (let index = 0; index < 12; index += 1) {
+        const y = 1 - (index / 11) * 2;
+        const radius = Math.sqrt(1 - y * y);
+        const angle = index * Math.PI * (3 - Math.sqrt(5));
+        const direction = new THREE.Vector3(Math.cos(angle) * radius, y, Math.sin(angle) * radius);
+        const spike = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.62, 6), sceneMaterials[materialName]);
+        spike.position.copy(direction).multiplyScalar(0.7);
+        spike.quaternion.setFromUnitVectors(up, direction);
+        playerBall.add(spike);
+        shapeDecorations.push(spike);
+      }
+    }
+
+    function unlockAudio() {
+      const AudioContextType = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextType) {
+        console.error("متصفحك لا يدعم أصوات اللعبة.");
+        return;
+      }
+      try {
+        if (!audioContext) audioContext = new AudioContextType();
+        if (audioContext.state === "suspended") {
+          audioContext.resume().catch((error) => console.error("تعذر تشغيل أصوات اللعبة.", error));
+        }
+      } catch (error) {
+        audioContext = undefined;
+        console.error("تعذر تهيئة أصوات اللعبة.", error);
+      }
+    }
+
+    function playSound(type) {
+      if (!audioContext || audioContext.state !== "running") return;
+      const sounds = {
+        jump: { notes: [390, 590], duration: 0.16, wave: "sine", volume: 0.055 },
+        slide: { notes: [310, 180], duration: 0.17, wave: "triangle", volume: 0.035 },
+        dash: { notes: [260, 520, 780], duration: 0.21, wave: "sawtooth", volume: 0.035 },
+        crystal: { notes: [720, 980], duration: 0.18, wave: "sine", volume: 0.065 },
+        power: { notes: [440, 660, 880], duration: 0.28, wave: "triangle", volume: 0.055 },
+        hit: { notes: [210, 105], duration: 0.28, wave: "sawtooth", volume: 0.055 },
+        stage: { notes: [523, 659, 784], duration: 0.34, wave: "sine", volume: 0.06 }
+      };
+      const sound = sounds[type];
+      if (!sound) throw new Error(`مؤثر صوتي غير معروف: ${type}`);
+      const startAt = audioContext.currentTime;
+      const output = audioContext.createGain();
+      output.gain.setValueAtTime(0.0001, startAt);
+      output.gain.exponentialRampToValueAtTime(sound.volume, startAt + 0.015);
+      output.gain.exponentialRampToValueAtTime(0.0001, startAt + sound.duration);
+      output.connect(audioContext.destination);
+      sound.notes.forEach((frequency, index) => {
+        const oscillator = audioContext.createOscillator();
+        const noteStart = startAt + index * (sound.duration / (sound.notes.length + 0.25));
+        oscillator.type = sound.wave;
+        oscillator.frequency.setValueAtTime(frequency, noteStart);
+        oscillator.connect(output);
+        oscillator.start(noteStart);
+        oscillator.stop(startAt + sound.duration);
+      });
+      window.setTimeout(() => output.disconnect(), Math.ceil(sound.duration * 1000) + 100);
     }
 
     function loadAchievementState() {
@@ -612,6 +765,10 @@
       road: new THREE.MeshStandardMaterial({ color: 0x182d48, roughness: 0.76 }),
       lane: new THREE.MeshStandardMaterial({ color: 0x82dcdb, emissive: 0x174947, emissiveIntensity: 0.8, roughness: 0.38 }),
       red: new THREE.MeshStandardMaterial({ color: 0xee304d, roughness: 0.25, metalness: 0.1 }),
+      ruby: new THREE.MeshStandardMaterial({ color: 0xc52349, emissive: 0x5d061c, emissiveIntensity: 0.28, roughness: 0.24, metalness: 0.38 }),
+      blue: new THREE.MeshStandardMaterial({ color: 0x48a9ed, emissive: 0x123e75, emissiveIntensity: 0.35, roughness: 0.24, metalness: 0.3 }),
+      violet: new THREE.MeshStandardMaterial({ color: 0xa364e8, emissive: 0x451778, emissiveIntensity: 0.4, roughness: 0.22, metalness: 0.34 }),
+      green: new THREE.MeshStandardMaterial({ color: 0x4ed08b, emissive: 0x126039, emissiveIntensity: 0.32, roughness: 0.25, metalness: 0.3 }),
       spike: new THREE.MeshStandardMaterial({ color: 0xe3183e, emissive: 0x98001c, emissiveIntensity: 0.85, metalness: 0.18, roughness: 0.32 }),
       block: new THREE.MeshStandardMaterial({ color: 0xe3183e, emissive: 0x98001c, emissiveIntensity: 0.85, metalness: 0.18, roughness: 0.32 }),
       drone: new THREE.MeshStandardMaterial({ color: 0xe3183e, emissive: 0x98001c, emissiveIntensity: 0.85, metalness: 0.18, roughness: 0.32 }),
@@ -707,11 +864,11 @@
         const tier = getTier(stageNumber);
         const stageCenter = -((stageNumber - 1) * LEVEL_LENGTH + LEVEL_LENGTH / 2);
         for (const side of [-1, 1]) {
-          for (let peak = 0; peak < 5; peak += 1) {
-            const radius = 16 + (peak % 3) * 5;
-            const height = 28 + ((stageNumber * 5 + peak * 7) % 5) * 8;
-            const x = side * (35 + (peak % 3) * 10);
-            const z = stageCenter + (peak - 2) * 78;
+          for (let peak = 0; peak < 7; peak += 1) {
+            const radius = 15 + (peak % 4) * 5;
+            const height = 30 + ((stageNumber * 5 + peak * 7) % 6) * 9;
+            const x = side * (33 + (peak % 4) * 9);
+            const z = stageCenter + (peak - 3) * 60;
             appendMountainTriangles(nearVertices[tier.index], x, z, radius, height, baseY);
             if (height >= 44) appendMountainTriangles(snowVertices, x, z, radius, height, baseY, true);
             const distantHeight = height * 0.72;
@@ -738,6 +895,64 @@
       nearVertices.forEach((vertices, index) => addLandscapeMesh(vertices, mountainMaterials[index]));
       distantVertices.forEach((vertices, index) => addLandscapeMesh(vertices, distantMountainMaterials[index]));
       addLandscapeMesh(snowVertices, snowMaterial);
+      createVegetationBackdrop();
+    }
+
+    function createVegetationBackdrop() {
+      const trunks = [];
+      const canopies = [];
+      const shrubs = [];
+      const colors = [0x2b694d, 0x397e51, 0x568b50, 0x7a9d58];
+      for (let stageNumber = 0; stageNumber < MAX_LEVEL; stageNumber += 1) {
+        const stageCenter = -(stageNumber * LEVEL_LENGTH + LEVEL_LENGTH / 2);
+        for (const side of [-1, 1]) {
+          for (let treeIndex = 0; treeIndex < 5; treeIndex += 1) {
+            const treeX = side * (8.5 + treeIndex * 3.4 + Math.random() * 1.4);
+            const treeZ = stageCenter + (treeIndex - 2) * 61 + (Math.random() - 0.5) * 24;
+            const scale = 0.72 + Math.random() * 0.6;
+            const tint = new THREE.Color(colors[Math.floor(Math.random() * colors.length)]);
+            trunks.push({ x: treeX, y: 0.85 * scale, z: treeZ, sx: 0.22 * scale, sy: 0.85 * scale, sz: 0.22 * scale, color: 0x76543b });
+            for (let layer = 0; layer < 3; layer += 1) {
+              const layerScale = (1.05 - layer * 0.19) * scale;
+              canopies.push({
+                x: treeX, y: (1.12 + layer * 0.48) * scale, z: treeZ,
+                sx: layerScale, sy: 0.9 * scale, sz: layerScale, color: tint
+              });
+            }
+          }
+          for (let shrubIndex = 0; shrubIndex < 8; shrubIndex += 1) {
+            shrubs.push({
+              x: side * (7.8 + Math.random() * 12),
+              y: 0.3 + Math.random() * 0.2,
+              z: stageCenter + (shrubIndex - 3.5) * 43 + (Math.random() - 0.5) * 20,
+              sx: 0.55 + Math.random() * 0.55,
+              sy: 0.45 + Math.random() * 0.3,
+              sz: 0.55 + Math.random() * 0.55,
+              color: colors[Math.floor(Math.random() * colors.length)]
+            });
+          }
+        }
+      }
+      const addInstances = (geometry, material, entries) => {
+        const mesh = new THREE.InstancedMesh(geometry, material, entries.length);
+        const transform = new THREE.Object3D();
+        entries.forEach((entry, index) => {
+          transform.position.set(entry.x, entry.y, entry.z);
+          transform.scale.set(entry.sx, entry.sy, entry.sz);
+          transform.rotation.y = entry.rotation || 0;
+          transform.updateMatrix();
+          mesh.setMatrixAt(index, transform.matrix);
+          mesh.setColorAt(index, new THREE.Color(entry.color));
+        });
+        mesh.instanceMatrix.needsUpdate = true;
+        if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+        mesh.castShadow = false;
+        mesh.receiveShadow = false;
+        scene.add(mesh);
+      };
+      addInstances(new THREE.CylinderGeometry(0.7, 0.95, 1, 7), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }), trunks);
+      addInstances(new THREE.ConeGeometry(1, 1.25, 7), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, flatShading: true }), canopies);
+      addInstances(new THREE.DodecahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), shrubs);
     }
 
     function saveDailyState() {
@@ -964,7 +1179,9 @@
 
     function createPlayer() {
       player = new THREE.Group();
-      playerBall = makeMesh(new THREE.SphereGeometry(BALL_RADIUS, 32, 24), sceneMaterials.red, { x: 0, y: 0, z: 0 }, player);
+      const initialShape = BALL_SHAPES.find((shape) => shape.id === selectedBallShape) || BALL_SHAPES[0];
+      playerBall = makeMesh(initialShape.geometry(), sceneMaterials[initialShape.material], { x: 0, y: 0, z: 0 }, player);
+      if (initialShape.id === "spike") addBallSpikes(initialShape.material);
       const faceCanvas = document.createElement("canvas");
       faceCanvas.width = 1024;
       faceCanvas.height = 512;
@@ -1000,12 +1217,13 @@
       const faceTexture = new THREE.CanvasTexture(faceCanvas);
       faceTexture.colorSpace = THREE.SRGBColorSpace;
       faceTexture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
-      const faceDecal = new THREE.Mesh(
+      playerFace = new THREE.Mesh(
         new THREE.SphereGeometry(0.924, 48, 32),
         new THREE.MeshBasicMaterial({ map: faceTexture, transparent: true, depthWrite: false, toneMapped: false })
       );
-      faceDecal.renderOrder = 1;
-      playerBall.add(faceDecal);
+      playerFace.renderOrder = 1;
+      playerFace.visible = Boolean(initialShape.hasFace);
+      playerBall.add(playerFace);
       playerShadow = new THREE.Mesh(
         new THREE.CircleGeometry(1.1, 28),
         new THREE.MeshBasicMaterial({ color: 0x020816, transparent: true, opacity: 0.42, depthWrite: false })
@@ -1022,7 +1240,7 @@
       scene.background = new THREE.Color(0x0d2542);
       scene.fog = new THREE.Fog(0x0d2542, 35, 180);
       camera = new THREE.PerspectiveCamera(58, 1, 0.1, 260);
-      camera.position.set(0, 6.2, 12);
+      camera.position.set(0, 7.4, 17);
       const hemisphere = new THREE.HemisphereLight(0xa8ddff, 0x142032, 2.05);
       scene.add(hemisphere);
       const sun = new THREE.DirectionalLight(0xffefd5, 3.2);
@@ -1059,7 +1277,7 @@
       const particles = new THREE.Points(particleGeometry, new THREE.PointsMaterial({ color: 0x9bdcf5, size: 0.22, transparent: true, opacity: 0.75 }));
       scene.add(particles);
       createPlayer();
-      camera.lookAt(0, 1, -9);
+      camera.lookAt(0, 1.5, -13);
     }
 
     function createObstacle(type, laneIndex, obstacleDistance) {
@@ -1067,8 +1285,11 @@
       group.position.set(LANE_X[laneIndex], 0, -obstacleDistance);
       if (type === "mine") {
         makeMesh(new THREE.CylinderGeometry(0.76, 0.88, 0.32, 12), sceneMaterials.spike, { x: 0, y: 0.17, z: 0 }, group);
-        const ring = makeMesh(new THREE.TorusGeometry(0.7, 0.07, 8, 20), sceneMaterials.gold, { x: 0, y: 0.25, z: 0 }, group);
+        const warningRing = makeMesh(new THREE.TorusGeometry(0.94, 0.055, 8, 28), sceneMaterials.spike, { x: 0, y: 0.28, z: 0 }, group);
+        warningRing.rotation.x = Math.PI / 2;
+        const ring = makeMesh(new THREE.TorusGeometry(0.68, 0.07, 8, 20), sceneMaterials.gold, { x: 0, y: 0.3, z: 0 }, group);
         ring.rotation.x = Math.PI / 2;
+        makeMesh(new THREE.SphereGeometry(0.29, 12, 10), sceneMaterials.gold, { x: 0, y: 0.43, z: 0 }, group);
         for (let index = 0; index < 5; index += 1) {
           const angle = (index / 5) * Math.PI * 2;
           const spike = makeMesh(
@@ -1211,14 +1432,15 @@
       sceneMaterials.road.color.copy(roadTone);
       const obstacleTypes = ["spike", "block", "drone", "mine"];
       const bossWaves = isBossStage ? 3 : 0;
-      const regularWaves = tier.waves - bossWaves;
+      const totalWaves = Math.round(MIN_STAGE_WAVES + (levelNumber - 1) * (MAX_STAGE_WAVES - MIN_STAGE_WAVES) / (MAX_LEVEL - 1));
+      const regularWaves = totalWaves - bossWaves;
       const regularDistance = isBossStage ? LEVEL_LENGTH * 0.68 : LEVEL_LENGTH - 65;
       for (let index = 0; index < regularWaves; index += 1) {
         const waveDistance = stageStart + 22 + index * (regularDistance / regularWaves);
         const hazardLane = Math.floor(Math.random() * 3);
         const type = obstacleTypes[(index + levelNumber - 1) % obstacleTypes.length];
         createObstacle(type, hazardLane, waveDistance);
-        const extraHazardChance = 0.12 + tier.index * 0.08;
+        const extraHazardChance = 0.12 + ((levelNumber - 1) / (MAX_LEVEL - 1)) * 0.28;
         if (Math.random() < extraHazardChance) {
           const secondLane = (hazardLane + 1 + Math.floor(Math.random() * 2)) % 3;
           createObstacle(index % 2 === 0 ? "spike" : "block", secondLane, waveDistance);
@@ -1281,18 +1503,23 @@
 
     function jump() {
       if (state !== "playing" || !grounded) return;
+      playSound("jump");
       slidingUntil = 0;
       grounded = false;
       verticalVelocity = 10.9 + Math.min(level - 1, 5) * 0.12;
     }
 
     function slide() {
-      if (state === "playing" && grounded) slidingUntil = performance.now() + 760;
+      if (state === "playing" && grounded) {
+        slidingUntil = performance.now() + 760;
+        playSound("slide");
+      }
     }
 
     function dash() {
       const now = performance.now();
       if (state === "playing" && now >= boostReadyAt) {
+        playSound("dash");
         boostUntil = now + 720;
         boostReadyAt = now + 3600;
         gameElement.classList.add("is-boosting");
@@ -1301,6 +1528,7 @@
     }
 
     function startGame() {
+      unlockAudio();
       playerName = sanitizeName(nameInput.value);
       nameInput.setCustomValidity("");
       nameInput.value = playerName;
@@ -1432,6 +1660,7 @@
 
     function takeHit() {
       if (state !== "playing" || performance.now() < invulnerableUntil) return;
+      playSound("hit");
       if (shieldActive) {
         shieldActive = false;
         invulnerableUntil = performance.now() + 850;
@@ -1456,6 +1685,7 @@
     }
 
     function completeLevel() {
+      playSound("stage");
       completedStages += 1;
       recordDailyProgress("stages", 1);
       if (BOSS_LEVELS.includes(level)) recordAchievementProgress("bosses");
@@ -1470,6 +1700,7 @@
     }
 
     function awardCrystal(crystal) {
+      playSound("crystal");
       crystal.collected = true;
       crystal.group.visible = false;
       crystals += 1;
@@ -1509,6 +1740,7 @@
         if (Math.abs(distance - powerup.distance) >= 1.8 || player.position.y > 4.1) continue;
         powerup.collected = true;
         powerup.group.visible = false;
+        playSound("power");
         recordAchievementProgress("powerups");
         if (powerup.type === "shield") shieldActive = true;
         if (powerup.type === "magnet") magnetUntil = now + 12000;
@@ -1535,9 +1767,7 @@
       const now = performance.now();
       const isBoosting = now < boostUntil;
       gameElement.classList.toggle("is-slowed", now < slowUntil);
-      const tier = getTier(level);
-      const stageProgress = (level - tier.first) / Math.max(1, tier.last - tier.first);
-      const baseSpeed = 13.2 + tier.index * 3.2 + stageProgress * 1.7 + completedStages * 0.01;
+      const baseSpeed = 13.2 + (level - 1) * 0.02;
       const speed = baseSpeed * (now < slowUntil ? 0.72 : 1) + (isBoosting ? 7 : 0);
       const distanceDelta = speed * delta;
       distance += distanceDelta;
@@ -1561,7 +1791,9 @@
         player.position.y = ROAD_SURFACE_Y + BALL_RADIUS * squash;
       }
       playerBall.scale.set(1, squash, 1);
-      playerBall.material = shieldActive ? sceneMaterials.shield : sceneMaterials.red;
+      const shape = BALL_SHAPES.find((option) => option.id === selectedBallShape) || BALL_SHAPES[0];
+      playerBall.material = shieldActive ? sceneMaterials.shield : sceneMaterials[shape.material];
+      for (const decoration of shapeDecorations) decoration.material = shieldActive ? sceneMaterials.shield : sceneMaterials[shape.material];
       playerBall.rotation.x = (-distance / (BALL_RADIUS * squash)) % (Math.PI * 2);
       player.visible = now >= invulnerableUntil || Math.floor(now / 90) % 2 === 0;
       playerShadow.position.x = player.position.x;
@@ -1600,11 +1832,11 @@
       if (bossAttacksCleared !== clearedBefore) updateScoreboard();
       if (distance >= level * LEVEL_LENGTH) completeLevel();
       if (Math.floor(animationTime * 2) !== Math.floor((animationTime - delta) * 2)) updateScoreboard();
-      const cameraTarget = new THREE.Vector3(player.position.x * 0.48, player.position.y + 5.3, player.position.z + 11.5);
+      const cameraTarget = new THREE.Vector3(player.position.x * 0.48, player.position.y + 6.4, player.position.z + 16);
       camera.position.x += (cameraTarget.x - camera.position.x) * Math.min(1, delta * 5);
       camera.position.y += (cameraTarget.y - camera.position.y) * Math.min(1, delta * 5);
       camera.position.z = cameraTarget.z;
-      camera.lookAt(player.position.x * 0.25, player.position.y + 1.25, player.position.z - 10);
+      camera.lookAt(player.position.x * 0.25, player.position.y + 1.5, player.position.z - 14);
     }
 
     function frame() {
@@ -1721,6 +1953,8 @@
     });
     tierSelect.addEventListener("change", populateStageOptions);
     stageSelect.addEventListener("change", previewSelectedStage);
+    ballShapeSelect.value = selectedBallShape;
+    ballShapeSelect.addEventListener("change", () => setBallShape(ballShapeSelect.value));
     nameInput.addEventListener("input", () => nameInput.setCustomValidity(""));
     document.querySelector("#result-button").addEventListener("click", () => {
       if (state === "hit" || state === "paused") resumeRun();
