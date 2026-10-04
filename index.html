@@ -190,7 +190,9 @@
     .panel-copy { margin: 0 0 18px; color: #bdcadd; line-height: 1.75; }
     .name-label { display: block; margin-bottom: 7px; color: #d8e4f4; font-size: .85rem; font-weight: 700; }
     .name-row { display: flex; gap: 8px; }
-    input {
+    .stage-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 12px 0; }
+    .stage-selectors label { min-width: 0; color: #d8e4f4; font-size: .78rem; font-weight: 700; }
+    .stage-selectors select, input {
       width: 100%;
       min-width: 0;
       padding: 12px 14px;
@@ -201,7 +203,8 @@
       background: #071321;
       text-align: right;
     }
-    input:focus { border-color: #6de8dc; box-shadow: 0 0 0 3px #6de8dc22; }
+    .stage-selectors select { display: block; margin-top: 6px; }
+    input:focus, .stage-selectors select:focus { border-color: #6de8dc; box-shadow: 0 0 0 3px #6de8dc22; }
     .name-row input { flex: 1; }
     button {
       min-height: 44px;
@@ -283,6 +286,8 @@
       .welcome-orb { width: 54px; height: 54px; }
       .welcome-brand { gap: 12px; margin-bottom: 13px; }
       .panel-copy { margin-bottom: 12px; font-size: .86rem; }
+      .stage-selectors { grid-template-columns: 1fr; gap: 7px; margin: 10px 0; }
+      .stage-selectors select { padding: 10px 12px; }
       .leaderboard { padding: 12px; }
       .leader-list { grid-template-columns: 1fr 1fr; }
       .leader-row { grid-template-columns: 23px minmax(0, 1fr) auto; gap: 5px; padding: 7px 5px; }
@@ -361,15 +366,28 @@
                   <h2 class="welcome-title">الكرة الحمراء <span>3D</span></h2>
                 </div>
               </div>
-              <p class="panel-copy">انطلق عبر ٥٠ مرحلة، مقسمة إلى أربعة أقسام متصاعدة الصعوبة. استخدم القوى، وتجاوز حراس الأقسام، وأكمل مهامك اليومية. الاسم اختياري.</p>
+              <p class="panel-copy">انطلق عبر ٥٠ مرحلة جبلية في أربعة أقسام متصاعدة الصعوبة. اختر نقطة البداية بحرية، واستخدم القوى، وتجاوز الحراس، وأكمل مهامك اليومية.</p>
               <form id="name-form">
                 <label class="name-label" for="player-name">اسمك في التصنيف العالمي — اختياري</label>
                 <div class="name-row">
                   <input id="player-name" name="playerName" maxlength="18" autocomplete="off" placeholder="اتركه فارغًا للعب كضيف">
                   <button type="submit" id="play-button">ابدأ المغامرة</button>
                 </div>
+                <div class="stage-selectors">
+                  <label for="tier-select">قسم الصعوبة
+                    <select id="tier-select" name="tier">
+                      <option value="0">البداية · سهل</option>
+                      <option value="1">التحدي · متوسط</option>
+                      <option value="2">الخبرة · صعب</option>
+                      <option value="3">الأساطير · خبير</option>
+                    </select>
+                  </label>
+                  <label for="stage-select">اختر المرحلة
+                    <select id="stage-select" name="stage"></select>
+                  </label>
+                </div>
               </form>
-              <p class="controls-hint">الاسم اختياري: أدخله لتسجيل نتيجتك في قائمة المتصدرين العالمية، أو اتركه فارغًا للعب كضيف دون حفظ النتيجة.<br>كمبيوتر: ← → تغيير المسار · ↑ أو مسافة للقفز · ↓ للانزلاق · Shift للاندفاع.<br>جوال: اسحب يمينًا أو يسارًا لتغيير المسار، للأعلى للقفز، للأسفل للانزلاق، وانقر مرتين للاندفاع. الدرع يصد ضربة، والمغناطيس يجذب البلورات، والساعة تبطئ السرعة.</p>
+              <p class="controls-hint">اختر أي قسم ومرحلة للبدء مباشرة، دون الحاجة إلى إنهاء المراحل السابقة. الاسم اختياري لحفظ نتيجتك.<br>كمبيوتر: ← → تغيير المسار · ↑ أو مسافة للقفز · ↓ للانزلاق · Shift للاندفاع.<br>جوال: اسحب لتغيير المسار أو للقفز والانزلاق، وانقر مرتين للاندفاع. الدرع يصد ضربة، والمغناطيس يجذب البلورات بحركة مرئية، والساعة تبطئ السرعة.</p>
             </div>
             <aside class="leaderboard" aria-label="قائمة أعلى اللاعبين">
               <div class="leader-head">
@@ -444,15 +462,16 @@
     const LOCAL_SCORES_KEY = "red-ball-3d-local-scores";
     const DAILY_PROGRESS_KEY = "red-ball-3d-daily-v1";
     const ACHIEVEMENTS_KEY = "red-ball-3d-achievements-v1";
-    const LEVEL_LENGTH = 1000;
+    const LEVEL_LENGTH = 400;
     const MAX_LEVEL = 50;
+    const WORLD_LENGTH = LEVEL_LENGTH * MAX_LEVEL + 200;
     const MAX_LIVES = 3;
     const BOSS_LEVELS = [13, 26, 38, 50];
     const TIERS = [
-      { name: "البداية", first: 1, last: 13, waves: 28 },
-      { name: "التحدي", first: 14, last: 26, waves: 35 },
-      { name: "الخبرة", first: 27, last: 38, waves: 42 },
-      { name: "الأساطير", first: 39, last: 50, waves: 49 }
+      { name: "البداية", first: 1, last: 13, waves: 18 },
+      { name: "التحدي", first: 14, last: 26, waves: 24 },
+      { name: "الخبرة", first: 27, last: 38, waves: 30 },
+      { name: "الأساطير", first: 39, last: 50, waves: 36 }
     ];
     const DAILY_MISSIONS = [
       { id: "crystals", label: "اجمع ١٥ بلورة", target: 15, reward: "شارة البلورات" },
@@ -472,8 +491,10 @@
     const SLIDE_SQUASH = 0.56;
     const BALL_GROUND_Y = ROAD_SURFACE_Y + BALL_RADIUS;
     const LANE_X = [-3.2, 0, 3.2];
-    const LEVEL_NAMES = ["وادي الفجر", "غابة النيون", "قمة السحاب", "صحراء الكريستال", "كهف الشفق", "مدينة الأطياف", "جسر العاصفة", "بحر النجوم", "بوابة البركان", "قلب المجرة"];
+    const LEVEL_NAMES = ["جبل إيفرست", "ماترهورن", "جبل فوجي", "كليمنجارو", "مون بلان", "دينالي", "أكونكاغوا", "جبل رينييه", "جبال الهيمالايا", "جبال الألب"];
     const LEVEL_COLORS = [0x3b94b7, 0x26a782, 0x666bd5, 0xc57d39, 0x994b95, 0x3c9eae, 0x537fc8, 0x8270c9, 0xcf6445, 0x3b79db];
+    const SKY_COLORS = [0x72b9db, 0x7194ad, 0xd39772, 0x62537e];
+    const FOG_COLORS = [0xa6ced5, 0x9caeb9, 0xd8b292, 0x817292];
     const formatter = new Intl.NumberFormat("ar");
     const world = document.querySelector("#game-world");
     const gameElement = document.querySelector("#game");
@@ -482,6 +503,8 @@
     const resultPanel = document.querySelector("#result-panel");
     const nameInput = document.querySelector("#player-name");
     const nameForm = document.querySelector("#name-form");
+    const tierSelect = document.querySelector("#tier-select");
+    const stageSelect = document.querySelector("#stage-select");
     const playButton = document.querySelector("#play-button");
     const scoreElement = document.querySelector("#score");
     const crystalsElement = document.querySelector("#crystals");
@@ -519,6 +542,7 @@
     let targetLane = 1;
     let distance = 0;
     let bestDistance = 0;
+    let runDistance = 0;
     let stageStart = 0;
     let level = 1;
     let lives = MAX_LIVES;
@@ -600,6 +624,13 @@
       boss: new THREE.MeshStandardMaterial({ color: 0x7e1027, emissive: 0x8f001c, emissiveIntensity: 0.7, metalness: 0.45, roughness: 0.28 }),
       scenery: new THREE.MeshStandardMaterial({ color: 0x244365, roughness: 0.92 })
     };
+    const mountainMaterials = [
+      0x426b78, 0x526b78, 0x78675e, 0x514b73
+    ].map((color) => new THREE.MeshStandardMaterial({ color, roughness: 1, flatShading: true }));
+    const distantMountainMaterials = [
+      0x345363, 0x405969, 0x665a5c, 0x403b62
+    ].map((color) => new THREE.MeshStandardMaterial({ color, roughness: 1, flatShading: true }));
+    const snowMaterial = new THREE.MeshStandardMaterial({ color: 0xe5f2f0, roughness: 0.95, flatShading: true });
 
     function isLeaderboardConfigured() {
       return /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(SUPABASE_URL) && SUPABASE_ANON_KEY.length > 20;
@@ -616,6 +647,97 @@
     function getTier(levelNumber) {
       const index = TIERS.findIndex((tier) => levelNumber >= tier.first && levelNumber <= tier.last);
       return { ...TIERS[Math.max(0, index)], index: Math.max(0, index) };
+    }
+
+    function populateStageOptions() {
+      const tier = TIERS[Number(tierSelect.value)];
+      stageSelect.replaceChildren();
+      for (let stageNumber = tier.first; stageNumber <= tier.last; stageNumber += 1) {
+        const option = document.createElement("option");
+        option.value = String(stageNumber);
+        option.textContent = `المرحلة ${formatter.format(stageNumber)} · ${getLevelName(stageNumber)}`;
+        stageSelect.append(option);
+      }
+      stageSelect.value = String(tier.first);
+      previewSelectedStage();
+    }
+
+    function previewSelectedStage() {
+      level = Number(stageSelect.value);
+      if (!scene || !player) return;
+      distance = (level - 1) * LEVEL_LENGTH;
+      bestDistance = 0;
+      runDistance = 0;
+      completedStages = 0;
+      crystals = 0;
+      score = 0;
+      lives = MAX_LIVES;
+      shieldActive = false;
+      magnetUntil = 0;
+      slowUntil = 0;
+      createLevel(level);
+      lane = 1;
+      targetLane = 1;
+      player.position.set(0, BALL_GROUND_Y, -distance);
+      player.rotation.set(0, 0, 0);
+      playerBall.rotation.set(0, 0, 0);
+      updateScoreboard();
+    }
+
+    function appendMountainTriangles(vertices, x, z, radius, height, baseY, snow = false) {
+      const ringY = snow ? baseY + height * 0.7 : baseY;
+      const ringRadius = snow ? radius * 0.32 : radius;
+      for (let side = 0; side < 6; side += 1) {
+        const angleA = (side / 6) * Math.PI * 2;
+        const angleB = ((side + 1) / 6) * Math.PI * 2;
+        vertices.push(
+          x, baseY + height, z,
+          x + Math.cos(angleA) * ringRadius, ringY, z + Math.sin(angleA) * ringRadius,
+          x + Math.cos(angleB) * ringRadius, ringY, z + Math.sin(angleB) * ringRadius
+        );
+      }
+    }
+
+    function createMountainBackdrop() {
+      const nearVertices = mountainMaterials.map(() => []);
+      const distantVertices = distantMountainMaterials.map(() => []);
+      const snowVertices = [];
+      const baseY = ROAD_SURFACE_Y - 0.2;
+      for (let stageNumber = 1; stageNumber <= MAX_LEVEL; stageNumber += 1) {
+        const tier = getTier(stageNumber);
+        const stageCenter = -((stageNumber - 1) * LEVEL_LENGTH + LEVEL_LENGTH / 2);
+        for (const side of [-1, 1]) {
+          for (let peak = 0; peak < 5; peak += 1) {
+            const radius = 16 + (peak % 3) * 5;
+            const height = 28 + ((stageNumber * 5 + peak * 7) % 5) * 8;
+            const x = side * (35 + (peak % 3) * 10);
+            const z = stageCenter + (peak - 2) * 78;
+            appendMountainTriangles(nearVertices[tier.index], x, z, radius, height, baseY);
+            if (height >= 44) appendMountainTriangles(snowVertices, x, z, radius, height, baseY, true);
+            const distantHeight = height * 0.72;
+            appendMountainTriangles(
+              distantVertices[tier.index],
+              side * (67 + (peak % 2) * 10),
+              z - 28,
+              radius * 1.35,
+              distantHeight,
+              baseY
+            );
+          }
+        }
+      }
+      const addLandscapeMesh = (vertices, material) => {
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.computeVertexNormals();
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.castShadow = false;
+        mesh.receiveShadow = false;
+        scene.add(mesh);
+      };
+      nearVertices.forEach((vertices, index) => addLandscapeMesh(vertices, mountainMaterials[index]));
+      distantVertices.forEach((vertices, index) => addLandscapeMesh(vertices, distantMountainMaterials[index]));
+      addLandscapeMesh(snowVertices, snowMaterial);
     }
 
     function saveDailyState() {
@@ -906,7 +1028,7 @@
       const sun = new THREE.DirectionalLight(0xffefd5, 3.2);
       sun.position.set(-8, 15, 8);
       sun.castShadow = true;
-      sun.shadow.mapSize.set(1024, 1024);
+      sun.shadow.mapSize.set(1536, 1536);
       sun.shadow.camera.left = -18;
       sun.shadow.camera.right = 18;
       sun.shadow.camera.top = 32;
@@ -914,34 +1036,23 @@
       sun.shadow.normalBias = 0.04;
       scene.add(sun);
 
-      const ground = makeMesh(new THREE.PlaneGeometry(90, 50500), sceneMaterials.floor, { x: 0, y: -0.18, z: -24990 });
+      const worldCenter = -LEVEL_LENGTH * MAX_LEVEL / 2;
+      const ground = makeMesh(new THREE.PlaneGeometry(180, WORLD_LENGTH), sceneMaterials.floor, { x: 0, y: -0.18, z: worldCenter });
       ground.rotation.x = -Math.PI / 2;
       ground.receiveShadow = true;
       ground.castShadow = false;
-      const road = makeMesh(new THREE.PlaneGeometry(12.4, 50500), sceneMaterials.road, { x: 0, y: -0.08, z: -24990 });
+      const road = makeMesh(new THREE.PlaneGeometry(12.4, WORLD_LENGTH), sceneMaterials.road, { x: 0, y: -0.08, z: worldCenter });
       road.rotation.x = -Math.PI / 2;
       road.castShadow = false;
       for (const x of [-5.7, -1.6, 1.6, 5.7]) {
-        const rail = makeMesh(new THREE.BoxGeometry(x === -5.7 || x === 5.7 ? 0.12 : 0.045, 0.035, 50500), sceneMaterials.lane, { x, y: 0.015, z: -24990 });
+        const rail = makeMesh(new THREE.BoxGeometry(x === -5.7 || x === 5.7 ? 0.12 : 0.045, 0.035, WORLD_LENGTH), sceneMaterials.lane, { x, y: 0.015, z: worldCenter });
         rail.castShadow = false;
         rail.receiveShadow = false;
       }
-      for (let i = 0; i < 330; i += 1) {
-        const z = 16 - i * 152;
-        for (const side of [-1, 1]) {
-          const height = 2 + (i * 7 % 11) * 0.52;
-          const width = 2.5 + (i * 3 % 5) * 0.7;
-          const building = makeMesh(
-            new THREE.BoxGeometry(width, height, 3 + (i % 3)),
-            sceneMaterials.scenery,
-            { x: side * (10 + (i % 4) * 2), y: height / 2 - 0.1, z }
-          );
-          building.castShadow = false;
-        }
-      }
+      createMountainBackdrop();
       const particlePositions = [];
-      for (let i = 0; i < 1100; i += 1) {
-        particlePositions.push((Math.random() - 0.5) * 190, 8 + Math.random() * 62, 20 - Math.random() * 50000);
+      for (let i = 0; i < 700; i += 1) {
+        particlePositions.push((Math.random() - 0.5) * 190, 8 + Math.random() * 62, 20 - Math.random() * LEVEL_LENGTH * MAX_LEVEL);
       }
       const particleGeometry = new THREE.BufferGeometry();
       particleGeometry.setAttribute("position", new THREE.Float32BufferAttribute(particlePositions, 3));
@@ -954,7 +1065,21 @@
     function createObstacle(type, laneIndex, obstacleDistance) {
       const group = new THREE.Group();
       group.position.set(LANE_X[laneIndex], 0, -obstacleDistance);
-      if (type === "spike") {
+      if (type === "mine") {
+        makeMesh(new THREE.CylinderGeometry(0.76, 0.88, 0.32, 12), sceneMaterials.spike, { x: 0, y: 0.17, z: 0 }, group);
+        const ring = makeMesh(new THREE.TorusGeometry(0.7, 0.07, 8, 20), sceneMaterials.gold, { x: 0, y: 0.25, z: 0 }, group);
+        ring.rotation.x = Math.PI / 2;
+        for (let index = 0; index < 5; index += 1) {
+          const angle = (index / 5) * Math.PI * 2;
+          const spike = makeMesh(
+            new THREE.ConeGeometry(0.19, 0.66, 5),
+            sceneMaterials.spike,
+            { x: Math.cos(angle) * 0.48, y: 0.55, z: Math.sin(angle) * 0.48 },
+            group
+          );
+          spike.rotation.z = Math.cos(angle) * 0.3;
+        }
+      } else if (type === "spike") {
         const base = makeMesh(new THREE.ConeGeometry(0.88, 1.65, 5), sceneMaterials.spike, { x: 0, y: 0.8, z: 0 }, group);
         base.rotation.y = Math.PI / 5;
         for (const x of [-0.54, 0.54]) {
@@ -999,7 +1124,16 @@
       orbit.rotation.x = Math.PI / 2;
       orbit.castShadow = false;
       addStageObject(group);
-      stars.push({ group, lane: laneIndex, distance: crystalDistance, collected: false, phase: Math.random() * 6 });
+      stars.push({
+        group,
+        lane: laneIndex,
+        distance: crystalDistance,
+        collected: false,
+        pulling: false,
+        pullStartedAt: 0,
+        pullStartPosition: new THREE.Vector3(),
+        phase: Math.random() * 6
+      });
     }
 
     function createPowerup(type, laneIndex, powerDistance) {
@@ -1071,20 +1205,20 @@
       const tier = getTier(levelNumber);
       const isBossStage = BOSS_LEVELS.includes(levelNumber);
       const color = LEVEL_COLORS[(levelNumber - 1) % LEVEL_COLORS.length];
-      scene.fog.color.setHex(color);
-      scene.background.setHex(color);
+      scene.fog.color.setHex(FOG_COLORS[tier.index]);
+      scene.background.setHex(SKY_COLORS[tier.index]);
       const roadTone = new THREE.Color(color).multiplyScalar(0.3);
       sceneMaterials.road.color.copy(roadTone);
-      const obstacleTypes = ["spike", "block", "drone"];
+      const obstacleTypes = ["spike", "block", "drone", "mine"];
       const bossWaves = isBossStage ? 3 : 0;
       const regularWaves = tier.waves - bossWaves;
-      const regularDistance = isBossStage ? LEVEL_LENGTH * 0.74 : LEVEL_LENGTH - 65;
+      const regularDistance = isBossStage ? LEVEL_LENGTH * 0.68 : LEVEL_LENGTH - 65;
       for (let index = 0; index < regularWaves; index += 1) {
         const waveDistance = stageStart + 22 + index * (regularDistance / regularWaves);
         const hazardLane = Math.floor(Math.random() * 3);
         const type = obstacleTypes[(index + levelNumber - 1) % obstacleTypes.length];
         createObstacle(type, hazardLane, waveDistance);
-        const extraHazardChance = 0.04 + tier.index * 0.07;
+        const extraHazardChance = 0.12 + tier.index * 0.08;
         if (Math.random() < extraHazardChance) {
           const secondLane = (hazardLane + 1 + Math.floor(Math.random() * 2)) % 3;
           createObstacle(index % 2 === 0 ? "spike" : "block", secondLane, waveDistance);
@@ -1100,7 +1234,7 @@
       if (isBossStage) {
         createBoss(levelNumber);
         for (let index = 0; index < 3; index += 1) {
-          const attackDistance = stageStart + 790 + index * 65;
+          const attackDistance = stageStart + LEVEL_LENGTH * 0.75 + index * LEVEL_LENGTH * 0.06;
           const safeLane = (levelNumber + index) % 3;
           bossAttackDistances.push(attackDistance);
           for (let laneIndex = 0; laneIndex < 3; laneIndex += 1) {
@@ -1116,7 +1250,7 @@
       if (!renderer || !camera) return;
       const bounds = world.getBoundingClientRect();
       if (bounds.width < 1 || bounds.height < 1) return;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setSize(bounds.width, bounds.height, false);
       camera.aspect = bounds.width / bounds.height;
       camera.fov = bounds.width < 600 && bounds.height > bounds.width ? 66 : 58;
@@ -1125,7 +1259,7 @@
 
     function initializeRenderer() {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.12;
@@ -1171,11 +1305,12 @@
       nameInput.setCustomValidity("");
       nameInput.value = playerName;
       if (playerName) localStorage.setItem(PLAYER_NAME_KEY, playerName);
+      level = Number(stageSelect.value);
       lane = 1;
       targetLane = 1;
-      distance = 0;
+      distance = (level - 1) * LEVEL_LENGTH;
       bestDistance = 0;
-      level = 1;
+      runDistance = 0;
       lives = MAX_LIVES;
       crystals = 0;
       score = 0;
@@ -1192,7 +1327,7 @@
       dailySaveDistanceAt = Math.floor(dailyState.distance);
       lostScoreSubmitted = false;
       createLevel(level);
-      player.position.set(0, BALL_GROUND_Y, 0);
+      player.position.set(0, BALL_GROUND_Y, -distance);
       player.rotation.set(0, 0, 0);
       playerBall.rotation.set(0, 0, 0);
       state = "playing";
@@ -1282,15 +1417,15 @@
     }
 
     function endRun(won) {
-      bestDistance = Math.max(bestDistance, distance);
+      bestDistance = Math.max(bestDistance, runDistance);
       saveDailyState();
       gameElement.classList.remove("is-slowed");
       updateScoreboard();
       state = "result";
       showResult(
         won ? "أسطورة المسارات! 🏆" : "انتهى السباق!",
-        `${playerName ? `${playerName}، ` : ""}نتيجتك ${formatter.format(score)} نقطة، وجمعت ${formatter.format(crystals)} بلورة وأنهيت ${formatter.format(won ? MAX_LEVEL : level)} من ${formatter.format(MAX_LEVEL)} مراحل.`,
-        won ? "أنهيت المغامرة كاملة" : "حاول تكسر رقمك"
+        `${playerName ? `${playerName}، ` : ""}نتيجتك ${formatter.format(score)} نقطة، وجمعت ${formatter.format(crystals)} بلورة، وأكملت ${formatter.format(completedStages)} مرحلة حتى المرحلة ${formatter.format(level)}.`,
+        won ? (completedStages === MAX_LEVEL ? "أنهيت المغامرة كاملة" : "أنهيت المرحلة الأخيرة") : "حاول تكسر رقمك"
       );
       void submitScore();
     }
@@ -1334,18 +1469,37 @@
       updateScoreboard();
     }
 
-    function collectCrystals() {
+    function awardCrystal(crystal) {
+      crystal.collected = true;
+      crystal.group.visible = false;
+      crystals += 1;
+      recordDailyProgress("crystals", 1);
+      recordAchievementProgress("crystals");
+      updateScoreboard();
+    }
+
+    function collectCrystals(now) {
       for (const crystal of stars) {
-        const magnetAttracts = performance.now() < magnetUntil && Math.abs(distance - crystal.distance) < 8;
-        if (crystal.collected || (!magnetAttracts && Math.round(lane) !== crystal.lane)) continue;
-        if (Math.abs(distance - crystal.distance) < (magnetAttracts ? 8 : 1.45) && player.position.y < 3.9) {
-          crystal.collected = true;
-          crystal.group.visible = false;
-          crystals += 1;
-          recordDailyProgress("crystals", 1);
-          recordAchievementProgress("crystals");
-          updateScoreboard();
+        if (crystal.collected || crystal.pulling || player.position.y >= 3.9) continue;
+        const distanceToCrystal = Math.abs(distance - crystal.distance);
+        if (now < magnetUntil && distanceToCrystal < 14) {
+          crystal.pulling = true;
+          crystal.pullStartedAt = now;
+          crystal.pullStartPosition.copy(crystal.group.position);
+        } else if (Math.round(lane) === crystal.lane && distanceToCrystal < 1.45) {
+          awardCrystal(crystal);
         }
+      }
+    }
+
+    function animateMagnetCrystals(now) {
+      for (const crystal of stars) {
+        if (!crystal.pulling || crystal.collected) continue;
+        const progress = Math.min(1, (now - crystal.pullStartedAt) / 360);
+        const easedProgress = 1 - (1 - progress) ** 3;
+        crystal.group.position.lerpVectors(crystal.pullStartPosition, player.position, easedProgress);
+        crystal.group.scale.setScalar(1 - easedProgress);
+        if (progress === 1) awardCrystal(crystal);
       }
     }
 
@@ -1369,7 +1523,7 @@
       for (const hazard of hazards) {
         if (hazard.lane !== Math.round(lane) || Math.abs(distance - hazard.distance) > 1.5) continue;
         if (hazard.type === "drone" && isSliding) continue;
-        if ((hazard.type === "spike" && player.position.y > BALL_GROUND_Y + 0.65) ||
+        if (((hazard.type === "spike" || hazard.type === "mine") && player.position.y > BALL_GROUND_Y + 0.65) ||
             (hazard.type === "block" && player.position.y > BALL_GROUND_Y + 1.25)) continue;
         takeHit();
         return;
@@ -1383,12 +1537,13 @@
       gameElement.classList.toggle("is-slowed", now < slowUntil);
       const tier = getTier(level);
       const stageProgress = (level - tier.first) / Math.max(1, tier.last - tier.first);
-      const baseSpeed = 13.2 + tier.index * 3.2 + stageProgress * 1.7;
+      const baseSpeed = 13.2 + tier.index * 3.2 + stageProgress * 1.7 + completedStages * 0.01;
       const speed = baseSpeed * (now < slowUntil ? 0.72 : 1) + (isBoosting ? 7 : 0);
       const distanceDelta = speed * delta;
       distance += distanceDelta;
+      runDistance += distanceDelta;
       recordDailyProgress("distance", distanceDelta);
-      bestDistance = Math.max(bestDistance, distance);
+      bestDistance = Math.max(bestDistance, runDistance);
       lane += (targetLane - lane) * Math.min(1, delta * 13);
       player.position.x += (LANE_X[Math.round(targetLane)] - player.position.x) * Math.min(1, delta * 13);
       player.position.z = -distance;
@@ -1424,7 +1579,7 @@
         bossObject.position.y = 4.7 + Math.sin(animationTime * 1.8) * 0.22;
       }
       for (const crystal of stars) {
-        if (crystal.collected) continue;
+        if (crystal.collected || crystal.pulling) continue;
         crystal.group.rotation.y = animationTime * 1.8 + crystal.phase;
         crystal.group.position.y = 1.82 + Math.sin(animationTime * 3 + crystal.phase) * 0.17;
       }
@@ -1433,7 +1588,8 @@
         powerup.group.rotation.y = animationTime * 1.6 + powerup.phase;
         powerup.group.position.y = 1.95 + Math.sin(animationTime * 2.8 + powerup.phase) * 0.2;
       }
-      collectCrystals();
+      collectCrystals(now);
+      animateMagnetCrystals(now);
       collectPowerups(now);
       checkHazards(now);
       if (state !== "playing") return;
@@ -1563,6 +1719,8 @@
       event.preventDefault();
       startGame();
     });
+    tierSelect.addEventListener("change", populateStageOptions);
+    stageSelect.addEventListener("change", previewSelectedStage);
     nameInput.addEventListener("input", () => nameInput.setCustomValidity(""));
     document.querySelector("#result-button").addEventListener("click", () => {
       if (state === "hit" || state === "paused") resumeRun();
@@ -1578,7 +1736,7 @@
     try {
       renderDailyAndAchievements();
       initializeRenderer();
-      createLevel(1);
+      populateStageOptions();
       void refreshLeaderboard();
       if (!isLeaderboardConfigured()) {
         setupNotice.hidden = false;
