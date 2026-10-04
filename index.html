@@ -99,6 +99,7 @@
     }
     .game.is-losing { animation: impact-shake 420ms ease-out; }
     .game.is-boosting { box-shadow: 0 22px 65px #0005, 0 0 32px #64f4e477, inset 0 1px #ffffff20; }
+    .game.is-slowed { box-shadow: 0 22px 65px #0005, 0 0 30px #a86dff66, inset 0 1px #ffffff20; }
     @keyframes impact-shake {
       0%, 100% { transform: translateX(0); }
       18%, 58% { transform: translateX(-8px); }
@@ -133,6 +134,12 @@
       pointer-events: none;
     }
     .progress-bar { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #58eadb, #ffd675); transition: width 100ms linear; }
+    .challenge-hud { position: absolute; z-index: 2; top: 76px; right: 16px; display: flex; flex-wrap: wrap; gap: 7px; pointer-events: none; }
+    .challenge-chip { padding: 7px 10px; border: 1px solid #ffffff22; border-radius: 11px; color: #f4f7ff; background: #091629cc; backdrop-filter: blur(10px); font-size: .73rem; font-weight: 800; }
+    .challenge-chip.boss { color: #ffb1bf; border-color: #ff456477; }
+    .challenge-chip.power { color: #9df7ea; border-color: #5be5d477; }
+    .challenge-chip.mission { color: #ffe4a0; border-color: #ffcf6377; }
+    body.is-menu .challenge-hud { display: none; }
 
     .overlay {
       position: absolute;
@@ -226,6 +233,15 @@
     .leader-score { color: #7bece0; font-size: .79rem; font-weight: 900; font-variant-numeric: tabular-nums; }
     .empty-leader { padding: 14px 7px; color: #93a7c0; font-size: .8rem; line-height: 1.65; text-align: center; }
     .leader-note { margin: 11px 0 0; color: #758aa5; font-size: .67rem; line-height: 1.6; }
+    .meta-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+    .meta-card { padding: 14px; border: 1px solid #ffffff19; border-radius: 15px; background: #071321a8; }
+    .meta-card h3 { margin: 0 0 10px; font-size: .92rem; }
+    .mission-list, .achievement-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .mission-row, .achievement-row { display: flex; justify-content: space-between; gap: 8px; padding: 8px 9px; border-radius: 10px; color: #b9c8da; background: #ffffff08; font-size: .72rem; }
+    .mission-row.is-complete, .achievement-row.is-unlocked { color: #a7f5d5; background: #2c9d781a; }
+    .mission-row span:first-child, .achievement-row span:first-child { min-width: 0; }
+    .meta-progress { flex: 0 0 auto; color: #80f3d1; font-variant-numeric: tabular-nums; }
+    .achievement-row.is-locked { opacity: .62; }
     .result-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
     .submit-state { min-height: 1.4em; margin: 10px 0 0; color: #9eb1c8; font-size: .78rem; line-height: 1.6; }
     .submit-state[data-kind="error"] { color: #ffabb4; }
@@ -273,6 +289,10 @@
       .leader-name, .leader-score { font-size: .7rem; }
       .leader-rank { font-size: .67rem; }
       .leader-note { margin-top: 7px; }
+      .meta-panels { grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
+      .meta-card { padding: 11px; }
+      .challenge-hud { top: 68px; right: 10px; gap: 5px; }
+      .challenge-chip { padding: 6px 8px; font-size: .64rem; }
       .bottom-bar { flex-direction: column; gap: 7px; }
       .game-actions { order: 3; }
       .control-row { display: none; }
@@ -324,6 +344,12 @@
       <div class="stage-tag" id="stage-tag">المرحلة الأولى · وادي الفجر</div>
       <div class="distance-tag" id="distance-tag">000 m</div>
       <div class="progress-track" aria-label="تقدم المرحلة"><div class="progress-bar" id="progress-bar"></div></div>
+      <div class="challenge-hud" aria-live="polite">
+        <span class="challenge-chip" id="tier-tag">القسم ١ · البداية</span>
+        <span class="challenge-chip boss" id="boss-tag" hidden></span>
+        <span class="challenge-chip power" id="power-tag" hidden></span>
+        <span class="challenge-chip mission" id="mission-tag"></span>
+      </div>
       <div class="overlay" id="overlay">
         <section class="panel" id="menu-panel">
           <div class="panel-grid">
@@ -335,7 +361,7 @@
                   <h2 class="welcome-title">الكرة الحمراء <span>3D</span></h2>
                 </div>
               </div>
-              <p class="panel-copy">انطلق في خمسين مرحلة أطول مليئة بالتحديات. أدخل اسمًا إذا أردت تسجيل نتيجتك في التصنيف العالمي، أو اتركه فارغًا والعب كضيف دون تسجيل نتيجتك.</p>
+              <p class="panel-copy">انطلق عبر ٥٠ مرحلة، مقسمة إلى أربعة أقسام متصاعدة الصعوبة. استخدم القوى، وتجاوز حراس الأقسام، وأكمل مهامك اليومية. الاسم اختياري.</p>
               <form id="name-form">
                 <label class="name-label" for="player-name">اسمك في التصنيف العالمي — اختياري</label>
                 <div class="name-row">
@@ -343,7 +369,7 @@
                   <button type="submit" id="play-button">ابدأ المغامرة</button>
                 </div>
               </form>
-              <p class="controls-hint">الاسم اختياري: أدخله لتسجيل نتيجتك في قائمة المتصدرين العالمية، أو اتركه فارغًا للعب كضيف دون حفظ النتيجة.<br>كمبيوتر: ← → تغيير المسار · ↑ أو مسافة للقفز · ↓ للانزلاق · Shift للاندفاع<br>جوال: اسحب يمينًا أو يسارًا لتغيير المسار، وللأعلى للقفز، وللأسفل للانزلاق، وانقر مرتين للاندفاع.</p>
+              <p class="controls-hint">الاسم اختياري: أدخله لتسجيل نتيجتك في قائمة المتصدرين العالمية، أو اتركه فارغًا للعب كضيف دون حفظ النتيجة.<br>كمبيوتر: ← → تغيير المسار · ↑ أو مسافة للقفز · ↓ للانزلاق · Shift للاندفاع.<br>جوال: اسحب يمينًا أو يسارًا لتغيير المسار، للأعلى للقفز، للأسفل للانزلاق، وانقر مرتين للاندفاع. الدرع يصد ضربة، والمغناطيس يجذب البلورات، والساعة تبطئ السرعة.</p>
             </div>
             <aside class="leaderboard" aria-label="قائمة أعلى اللاعبين">
               <div class="leader-head">
@@ -351,8 +377,18 @@
                 <span class="leader-state" id="leader-state">جارٍ تحميل النتائج…</span>
               </div>
               <ol class="leader-list" id="leader-list" aria-live="polite"></ol>
-              <p class="leader-note" id="leader-note">كل بلورة = ٣٠ نقطة · وكل مرحلة تنهيها = ١٢٠ نقطة</p>
+              <p class="leader-note" id="leader-note">كل ٢ متر = نقطة · كل بلورة = ٣ نقاط · وكل مرحلة = ١٢٠ نقطة</p>
             </aside>
+          </div>
+          <div class="meta-panels">
+            <section class="meta-card" aria-labelledby="mission-heading">
+              <h3 id="mission-heading">📜 مهام اليوم</h3>
+              <ul class="mission-list" id="mission-list"></ul>
+            </section>
+            <section class="meta-card" aria-labelledby="achievement-heading">
+              <h3 id="achievement-heading">🏅 الإنجازات</h3>
+              <ul class="achievement-list" id="achievement-list"></ul>
+            </section>
           </div>
           <p class="submit-state" id="setup-notice" data-kind="error" hidden></p>
         </section>
@@ -406,9 +442,31 @@
     const SUPABASE_ANON_KEY = "sb_publishable_rHtZWXMzapW0G6d95P137Q_MHV8ixsb";
     const PLAYER_NAME_KEY = "red-ball-3d-player";
     const LOCAL_SCORES_KEY = "red-ball-3d-local-scores";
-    const LEVEL_LENGTH = 200;
+    const DAILY_PROGRESS_KEY = "red-ball-3d-daily-v1";
+    const ACHIEVEMENTS_KEY = "red-ball-3d-achievements-v1";
+    const LEVEL_LENGTH = 1000;
     const MAX_LEVEL = 50;
     const MAX_LIVES = 3;
+    const BOSS_LEVELS = [13, 26, 38, 50];
+    const TIERS = [
+      { name: "البداية", first: 1, last: 13, waves: 28 },
+      { name: "التحدي", first: 14, last: 26, waves: 35 },
+      { name: "الخبرة", first: 27, last: 38, waves: 42 },
+      { name: "الأساطير", first: 39, last: 50, waves: 49 }
+    ];
+    const DAILY_MISSIONS = [
+      { id: "crystals", label: "اجمع ١٥ بلورة", target: 15, reward: "شارة البلورات" },
+      { id: "distance", label: "اقطع ١٬٥٠٠ متر", target: 1500, reward: "شارة المسافر" },
+      { id: "stages", label: "أكمل مرحلتين", target: 2, reward: "شارة المتمرس" }
+    ];
+    const ACHIEVEMENT_DEFINITIONS = [
+      { id: "first-crystal", label: "أول بلورة", detail: "اجمع أول بلورة", key: "crystals", target: 1 },
+      { id: "crystal-collector", label: "جامع البلورات", detail: "اجمع ١٠٠ بلورة", key: "crystals", target: 100 },
+      { id: "power-user", label: "خبير القوى", detail: "اجمع ٢٥ قوة", key: "powerups", target: 25 },
+      { id: "guardian-slayer", label: "قاهر الحراس", detail: "اهزم أول حارس", key: "bosses", target: 1 },
+      { id: "legendary-runner", label: "عدّاء أسطوري", detail: "اهزم الحراس الأربعة", key: "bosses", target: 4 },
+      { id: "daily-hero", label: "بطل المهام", detail: "أكمل ٥ مهام يومية", key: "dailyCompletions", target: 5 }
+    ];
     const ROAD_SURFACE_Y = -0.08;
     const BALL_RADIUS = 0.92;
     const SLIDE_SQUASH = 0.56;
@@ -432,6 +490,12 @@
     const stageTag = document.querySelector("#stage-tag");
     const distanceTag = document.querySelector("#distance-tag");
     const progressBar = document.querySelector("#progress-bar");
+    const tierTag = document.querySelector("#tier-tag");
+    const bossTag = document.querySelector("#boss-tag");
+    const powerTag = document.querySelector("#power-tag");
+    const missionTag = document.querySelector("#mission-tag");
+    const missionList = document.querySelector("#mission-list");
+    const achievementList = document.querySelector("#achievement-list");
     const leaderState = document.querySelector("#leader-state");
     const leaderList = document.querySelector("#leader-list");
     const resultLeaderList = document.querySelector("#result-leader-list");
@@ -447,6 +511,7 @@
     let playerShadow;
     let stars = [];
     let hazards = [];
+    let powerups = [];
     let stageObjects = [];
     let state = "menu";
     let playerName = "";
@@ -471,6 +536,52 @@
     let completedStages = 0;
     let touchStart = null;
     let lastTouchTapAt = 0;
+    let bossObject = null;
+    let bossAttacksCleared = 0;
+    let bossAttackDistances = [];
+    let shieldActive = false;
+    let magnetUntil = 0;
+    let slowUntil = 0;
+    let dailySaveDistanceAt = 0;
+    let dailyUiProgress = { crystals: -1, distance: -1, stages: -1 };
+
+    function localDateKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    }
+
+    function loadDailyState() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(DAILY_PROGRESS_KEY) || "null");
+        if (stored && stored.date === localDateKey() && Number.isFinite(stored.crystals) && Number.isFinite(stored.distance) && Number.isFinite(stored.stages) && Array.isArray(stored.claimed)) {
+          return { date: stored.date, crystals: stored.crystals, distance: stored.distance, stages: stored.stages, claimed: stored.claimed.filter((id) => DAILY_MISSIONS.some((mission) => mission.id === id)) };
+        }
+      } catch (error) {
+        console.error("تعذرت قراءة تقدم المهام اليومية.", error);
+      }
+      return { date: localDateKey(), crystals: 0, distance: 0, stages: 0, claimed: [] };
+    }
+
+    function loadAchievementState() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(ACHIEVEMENTS_KEY) || "null");
+        if (stored && Number.isFinite(stored.crystals) && Number.isFinite(stored.powerups) && Number.isFinite(stored.bosses) && Number.isFinite(stored.dailyCompletions) && Array.isArray(stored.unlocked)) {
+          return {
+            crystals: stored.crystals,
+            powerups: stored.powerups,
+            bosses: stored.bosses,
+            dailyCompletions: stored.dailyCompletions,
+            unlocked: stored.unlocked.filter((id) => ACHIEVEMENT_DEFINITIONS.some((achievement) => achievement.id === id))
+          };
+        }
+      } catch (error) {
+        console.error("تعذرت قراءة الإنجازات المحفوظة.", error);
+      }
+      return { crystals: 0, powerups: 0, bosses: 0, dailyCompletions: 0, unlocked: [] };
+    }
+
+    const dailyState = loadDailyState();
+    const achievementState = loadAchievementState();
 
     const sceneMaterials = {
       floor: new THREE.MeshStandardMaterial({ color: 0x102139, roughness: 0.9 }),
@@ -483,6 +594,10 @@
       gold: new THREE.MeshStandardMaterial({ color: 0xffd45e, emissive: 0xe88711, emissiveIntensity: 0.9, metalness: 0.55, roughness: 0.19 }),
       crystal: new THREE.MeshStandardMaterial({ color: 0x80fff0, emissive: 0x16c9bb, emissiveIntensity: 1.15, metalness: 0.16, roughness: 0.2 }),
       portal: new THREE.MeshStandardMaterial({ color: 0x80f4e8, emissive: 0x23a699, emissiveIntensity: 1.15, metalness: 0.3, roughness: 0.2 }),
+      shield: new THREE.MeshStandardMaterial({ color: 0x73bbff, emissive: 0x2678e8, emissiveIntensity: 1.1, metalness: 0.35, roughness: 0.2 }),
+      magnet: new THREE.MeshStandardMaterial({ color: 0xf38aff, emissive: 0xa729d8, emissiveIntensity: 1.1, metalness: 0.35, roughness: 0.2 }),
+      slow: new THREE.MeshStandardMaterial({ color: 0xffd45e, emissive: 0xe88711, emissiveIntensity: 1.1, metalness: 0.45, roughness: 0.2 }),
+      boss: new THREE.MeshStandardMaterial({ color: 0x7e1027, emissive: 0x8f001c, emissiveIntensity: 0.7, metalness: 0.45, roughness: 0.28 }),
       scenery: new THREE.MeshStandardMaterial({ color: 0x244365, roughness: 0.92 })
     };
 
@@ -496,6 +611,125 @@
 
     function getLevelName(levelNumber) {
       return LEVEL_NAMES[(levelNumber - 1) % LEVEL_NAMES.length];
+    }
+
+    function getTier(levelNumber) {
+      const index = TIERS.findIndex((tier) => levelNumber >= tier.first && levelNumber <= tier.last);
+      return { ...TIERS[Math.max(0, index)], index: Math.max(0, index) };
+    }
+
+    function saveDailyState() {
+      try {
+        localStorage.setItem(DAILY_PROGRESS_KEY, JSON.stringify(dailyState));
+      } catch (error) {
+        console.error("تعذر حفظ تقدم المهام اليومية.", error);
+      }
+    }
+
+    function saveAchievementState() {
+      try {
+        localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(achievementState));
+      } catch (error) {
+        console.error("تعذر حفظ الإنجازات.", error);
+      }
+    }
+
+    function renderDailyAndAchievements() {
+      missionList.replaceChildren();
+      for (const mission of DAILY_MISSIONS) {
+        const progress = Math.min(mission.target, Math.floor(dailyState[mission.id]));
+        const complete = dailyState.claimed.includes(mission.id);
+        const row = document.createElement("li");
+        row.className = `mission-row${complete ? " is-complete" : ""}`;
+        const label = document.createElement("span");
+        label.textContent = complete ? `${mission.label} · اكتملت!` : `${mission.label} · ${mission.reward}`;
+        const count = document.createElement("span");
+        count.className = "meta-progress";
+        count.textContent = `${formatter.format(progress)} / ${formatter.format(mission.target)}`;
+        row.append(label, count);
+        missionList.append(row);
+      }
+      const activeMission = DAILY_MISSIONS.find((mission) => !dailyState.claimed.includes(mission.id));
+      missionTag.textContent = activeMission
+        ? `مهمة: ${activeMission.label} · ${formatter.format(Math.min(activeMission.target, Math.floor(dailyState[activeMission.id])))}/${formatter.format(activeMission.target)}`
+        : "اكتملت مهام اليوم ✅";
+      achievementList.replaceChildren();
+      for (const achievement of ACHIEVEMENT_DEFINITIONS) {
+        const unlocked = achievementState.unlocked.includes(achievement.id);
+        const row = document.createElement("li");
+        row.className = `achievement-row ${unlocked ? "is-unlocked" : "is-locked"}`;
+        const label = document.createElement("span");
+        label.textContent = unlocked ? `🏅 ${achievement.label}` : `🔒 ${achievement.detail}`;
+        const status = document.createElement("span");
+        status.className = "meta-progress";
+        status.textContent = unlocked ? "تم" : `${formatter.format(achievementState[achievement.key])}/${formatter.format(achievement.target)}`;
+        row.append(label, status);
+        achievementList.append(row);
+      }
+    }
+
+    function checkAchievements() {
+      let changed = false;
+      for (const achievement of ACHIEVEMENT_DEFINITIONS) {
+        if (achievementState[achievement.key] >= achievement.target && !achievementState.unlocked.includes(achievement.id)) {
+          achievementState.unlocked.push(achievement.id);
+          changed = true;
+        }
+      }
+      if (changed) saveAchievementState();
+      renderDailyAndAchievements();
+    }
+
+    function recordDailyProgress(kind, amount) {
+      if (dailyState.date !== localDateKey()) {
+        dailyState.date = localDateKey();
+        dailyState.crystals = 0;
+        dailyState.distance = 0;
+        dailyState.stages = 0;
+        dailyState.claimed = [];
+        dailySaveDistanceAt = 0;
+        dailyUiProgress = { crystals: -1, distance: -1, stages: -1 };
+        renderDailyAndAchievements();
+      }
+      const before = Math.floor(dailyState[kind]);
+      dailyState[kind] += amount;
+      const current = Math.floor(dailyState[kind]);
+      const shouldSave = kind !== "distance" || current - dailySaveDistanceAt >= 10;
+      if (shouldSave) {
+        if (kind === "distance") dailySaveDistanceAt = current;
+        saveDailyState();
+      }
+      if (current !== before) {
+        for (const mission of DAILY_MISSIONS) {
+          if (mission.id === kind && current >= mission.target && !dailyState.claimed.includes(mission.id)) {
+            dailyState.claimed.push(mission.id);
+            achievementState.dailyCompletions += 1;
+            saveDailyState();
+            checkAchievements();
+          }
+        }
+        const bucketSize = kind === "distance" ? 10 : 1;
+        const progressBucket = Math.floor(current / bucketSize);
+        if (dailyUiProgress[kind] !== progressBucket) {
+          dailyUiProgress[kind] = progressBucket;
+          renderDailyAndAchievements();
+        }
+      }
+    }
+
+    function recordAchievementProgress(kind, amount = 1) {
+      achievementState[kind] += amount;
+      saveAchievementState();
+      checkAchievements();
+    }
+
+    function updatePowerTag(now) {
+      const active = [];
+      if (shieldActive) active.push("🛡️ درع");
+      if (now < magnetUntil) active.push(`🧲 مغناطيس ${Math.ceil((magnetUntil - now) / 1000)}ث`);
+      if (now < slowUntil) active.push(`⏳ إبطاء ${Math.ceil((slowUntil - now) / 1000)}ث`);
+      powerTag.hidden = active.length === 0;
+      powerTag.textContent = active.join(" · ");
     }
 
     function localScores() {
@@ -569,8 +803,8 @@
     }
 
     function updateScoreboard() {
-      const distancePoints = Math.floor(bestDistance * 2);
-      score = distancePoints + crystals * 30 + completedStages * 120;
+      const distancePoints = Math.floor(bestDistance / 2);
+      score = distancePoints + crystals * 3 + completedStages * 120;
       scoreElement.textContent = formatter.format(score);
       crystalsElement.textContent = formatter.format(crystals);
       levelElement.textContent = `${formatter.format(level)} / ${formatter.format(MAX_LEVEL)}`;
@@ -578,6 +812,11 @@
       distanceTag.textContent = `${String(Math.floor(bestDistance)).padStart(3, "0")} m`;
       progressBar.style.width = `${Math.min(100, ((distance - stageStart) / LEVEL_LENGTH) * 100)}%`;
       stageTag.textContent = `المرحلة ${formatter.format(level)} · ${getLevelName(level)}`;
+      const tier = getTier(level);
+      tierTag.textContent = `القسم ${formatter.format(tier.index + 1)} · ${tier.name}`;
+      bossTag.hidden = !BOSS_LEVELS.includes(level);
+      if (!bossTag.hidden) bossTag.textContent = `الحارس ${formatter.format(bossAttacksCleared)} / ٣`;
+      updatePowerTag(performance.now());
     }
 
     function makeMesh(geometry, material, position, parent = scene) {
@@ -591,6 +830,12 @@
 
     function addStageObject(object) {
       stageObjects.push(object);
+      object.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = false;
+          child.receiveShadow = false;
+        }
+      });
       scene.add(object);
       return object;
     }
@@ -669,17 +914,20 @@
       sun.shadow.normalBias = 0.04;
       scene.add(sun);
 
-      const ground = makeMesh(new THREE.PlaneGeometry(90, 11000), sceneMaterials.floor, { x: 0, y: -0.18, z: -4900 });
+      const ground = makeMesh(new THREE.PlaneGeometry(90, 50500), sceneMaterials.floor, { x: 0, y: -0.18, z: -24990 });
       ground.rotation.x = -Math.PI / 2;
       ground.receiveShadow = true;
-      const road = makeMesh(new THREE.PlaneGeometry(12.4, 10500), sceneMaterials.road, { x: 0, y: -0.08, z: -4900 });
+      ground.castShadow = false;
+      const road = makeMesh(new THREE.PlaneGeometry(12.4, 50500), sceneMaterials.road, { x: 0, y: -0.08, z: -24990 });
       road.rotation.x = -Math.PI / 2;
+      road.castShadow = false;
       for (const x of [-5.7, -1.6, 1.6, 5.7]) {
-        const rail = makeMesh(new THREE.BoxGeometry(x === -5.7 || x === 5.7 ? 0.12 : 0.045, 0.035, 10500), sceneMaterials.lane, { x, y: 0.015, z: -4900 });
+        const rail = makeMesh(new THREE.BoxGeometry(x === -5.7 || x === 5.7 ? 0.12 : 0.045, 0.035, 50500), sceneMaterials.lane, { x, y: 0.015, z: -24990 });
         rail.castShadow = false;
+        rail.receiveShadow = false;
       }
-      for (let i = 0; i < 170; i += 1) {
-        const z = 16 - i * 62;
+      for (let i = 0; i < 330; i += 1) {
+        const z = 16 - i * 152;
         for (const side of [-1, 1]) {
           const height = 2 + (i * 7 % 11) * 0.52;
           const width = 2.5 + (i * 3 % 5) * 0.7;
@@ -693,7 +941,7 @@
       }
       const particlePositions = [];
       for (let i = 0; i < 1100; i += 1) {
-        particlePositions.push((Math.random() - 0.5) * 190, 8 + Math.random() * 62, 20 - Math.random() * 10500);
+        particlePositions.push((Math.random() - 0.5) * 190, 8 + Math.random() * 62, 20 - Math.random() * 50000);
       }
       const particleGeometry = new THREE.BufferGeometry();
       particleGeometry.setAttribute("position", new THREE.Float32BufferAttribute(particlePositions, 3));
@@ -754,6 +1002,40 @@
       stars.push({ group, lane: laneIndex, distance: crystalDistance, collected: false, phase: Math.random() * 6 });
     }
 
+    function createPowerup(type, laneIndex, powerDistance) {
+      const group = new THREE.Group();
+      group.position.set(LANE_X[laneIndex], 1.95, -powerDistance);
+      const material = sceneMaterials[type];
+      const core = makeMesh(new THREE.IcosahedronGeometry(0.52, 1), material, { x: 0, y: 0, z: 0 }, group);
+      core.scale.set(0.82, 1.15, 0.82);
+      const ring = makeMesh(new THREE.TorusGeometry(0.76, 0.055, 8, 32), material, { x: 0, y: 0, z: 0 }, group);
+      ring.rotation.x = Math.PI / 2;
+      ring.castShadow = false;
+      addStageObject(group);
+      powerups.push({ group, type, lane: laneIndex, distance: powerDistance, collected: false, phase: Math.random() * 6 });
+    }
+
+    function createBoss(levelNumber) {
+      const group = new THREE.Group();
+      group.position.set(0, 4.7, -(stageStart + LEVEL_LENGTH - 42));
+      const core = makeMesh(new THREE.DodecahedronGeometry(2.05, 1), sceneMaterials.boss, { x: 0, y: 0, z: 0 }, group);
+      core.scale.set(1.25, 0.95, 0.75);
+      makeMesh(new THREE.TorusGeometry(2.35, 0.18, 10, 48), sceneMaterials.spike, { x: 0, y: 0, z: 0 }, group);
+      for (let index = 0; index < 10; index += 1) {
+        const angle = (index / 10) * Math.PI * 2;
+        const thorn = makeMesh(
+          new THREE.ConeGeometry(0.38, 1.35, 5),
+          sceneMaterials.spike,
+          { x: Math.cos(angle) * 2.25, y: Math.sin(angle) * 2.05, z: 0 },
+          group
+        );
+        thorn.rotation.z = -angle + Math.PI / 2;
+      }
+      makeMesh(new THREE.SphereGeometry(0.44, 18, 14), sceneMaterials.gold, { x: 0, y: 0, z: 1.42 }, group);
+      group.userData.level = levelNumber;
+      bossObject = addStageObject(group);
+    }
+
     function createFinishGate(gateDistance) {
       const gate = new THREE.Group();
       gate.position.z = -gateDistance;
@@ -777,29 +1059,54 @@
       stageObjects = [];
       stars = [];
       hazards = [];
+      powerups = [];
+      bossObject = null;
+      bossAttacksCleared = 0;
+      bossAttackDistances = [];
     }
 
     function createLevel(levelNumber) {
       clearStageObjects();
       stageStart = (levelNumber - 1) * LEVEL_LENGTH;
+      const tier = getTier(levelNumber);
+      const isBossStage = BOSS_LEVELS.includes(levelNumber);
       const color = LEVEL_COLORS[(levelNumber - 1) % LEVEL_COLORS.length];
       scene.fog.color.setHex(color);
       scene.background.setHex(color);
       const roadTone = new THREE.Color(color).multiplyScalar(0.3);
       sceneMaterials.road.color.copy(roadTone);
       const obstacleTypes = ["spike", "block", "drone"];
-      for (let index = 0; index < 10; index += 1) {
-        const waveDistance = stageStart + 18 + index * 17;
+      const bossWaves = isBossStage ? 3 : 0;
+      const regularWaves = tier.waves - bossWaves;
+      const regularDistance = isBossStage ? LEVEL_LENGTH * 0.74 : LEVEL_LENGTH - 65;
+      for (let index = 0; index < regularWaves; index += 1) {
+        const waveDistance = stageStart + 22 + index * (regularDistance / regularWaves);
         const hazardLane = Math.floor(Math.random() * 3);
         const type = obstacleTypes[(index + levelNumber - 1) % obstacleTypes.length];
         createObstacle(type, hazardLane, waveDistance);
-        if (levelNumber >= 4 && index % 3 === 2) {
+        const extraHazardChance = 0.04 + tier.index * 0.07;
+        if (Math.random() < extraHazardChance) {
           const secondLane = (hazardLane + 1 + Math.floor(Math.random() * 2)) % 3;
-          createObstacle(index % 2 === 0 ? "spike" : "block", secondLane, waveDistance + 2.3);
+          createObstacle(index % 2 === 0 ? "spike" : "block", secondLane, waveDistance);
         }
         const crystalLane = (hazardLane + 1 + Math.floor(Math.random() * 2)) % 3;
         createCrystal(crystalLane, waveDistance + 6.5);
         if (index % 2 === 0) createCrystal((crystalLane + 1) % 3, waveDistance + 9.2);
+        if (index > 0 && index % 9 === 4) {
+          const powerType = ["shield", "magnet", "slow"][(Math.floor(index / 9) + tier.index) % 3];
+          createPowerup(powerType, (crystalLane + 1) % 3, waveDistance + 4.5);
+        }
+      }
+      if (isBossStage) {
+        createBoss(levelNumber);
+        for (let index = 0; index < 3; index += 1) {
+          const attackDistance = stageStart + 790 + index * 65;
+          const safeLane = (levelNumber + index) % 3;
+          bossAttackDistances.push(attackDistance);
+          for (let laneIndex = 0; laneIndex < 3; laneIndex += 1) {
+            if (laneIndex !== safeLane) createObstacle("block", laneIndex, attackDistance);
+          }
+        }
       }
       createFinishGate(stageStart + LEVEL_LENGTH - 3);
       updateScoreboard();
@@ -879,6 +1186,10 @@
       boostReadyAt = 0;
       invulnerableUntil = 0;
       completedStages = 0;
+      shieldActive = false;
+      magnetUntil = 0;
+      slowUntil = 0;
+      dailySaveDistanceAt = Math.floor(dailyState.distance);
       lostScoreSubmitted = false;
       createLevel(level);
       player.position.set(0, BALL_GROUND_Y, 0);
@@ -888,6 +1199,7 @@
       document.body.classList.remove("is-menu");
       overlay.hidden = true;
       gameElement.classList.remove("is-losing");
+      gameElement.classList.remove("is-slowed");
       document.querySelector("#pause-button").textContent = "⏸ إيقاف مؤقت";
       updateScoreboard();
     }
@@ -971,6 +1283,8 @@
 
     function endRun(won) {
       bestDistance = Math.max(bestDistance, distance);
+      saveDailyState();
+      gameElement.classList.remove("is-slowed");
       updateScoreboard();
       state = "result";
       showResult(
@@ -983,6 +1297,14 @@
 
     function takeHit() {
       if (state !== "playing" || performance.now() < invulnerableUntil) return;
+      if (shieldActive) {
+        shieldActive = false;
+        invulnerableUntil = performance.now() + 850;
+        updatePowerTag(performance.now());
+        gameElement.classList.add("is-boosting");
+        window.setTimeout(() => gameElement.classList.remove("is-boosting"), 520);
+        return;
+      }
       lives -= 1;
       invulnerableUntil = performance.now() + 1700;
       gameElement.classList.remove("is-losing");
@@ -1000,6 +1322,8 @@
 
     function completeLevel() {
       completedStages += 1;
+      recordDailyProgress("stages", 1);
+      if (BOSS_LEVELS.includes(level)) recordAchievementProgress("bosses");
       if (level >= MAX_LEVEL) {
         level = MAX_LEVEL;
         endRun(true);
@@ -1008,18 +1332,34 @@
       level += 1;
       createLevel(level);
       updateScoreboard();
-      stageTag.textContent = `المرحلة ${formatter.format(level)} · ${getLevelName(level)}`;
     }
 
     function collectCrystals() {
       for (const crystal of stars) {
-        if (crystal.collected || Math.round(lane) !== crystal.lane) continue;
-        if (Math.abs(distance - crystal.distance) < 1.45 && player.position.y < 3.9) {
+        const magnetAttracts = performance.now() < magnetUntil && Math.abs(distance - crystal.distance) < 8;
+        if (crystal.collected || (!magnetAttracts && Math.round(lane) !== crystal.lane)) continue;
+        if (Math.abs(distance - crystal.distance) < (magnetAttracts ? 8 : 1.45) && player.position.y < 3.9) {
           crystal.collected = true;
           crystal.group.visible = false;
           crystals += 1;
+          recordDailyProgress("crystals", 1);
+          recordAchievementProgress("crystals");
           updateScoreboard();
         }
+      }
+    }
+
+    function collectPowerups(now) {
+      for (const powerup of powerups) {
+        if (powerup.collected || Math.round(lane) !== powerup.lane) continue;
+        if (Math.abs(distance - powerup.distance) >= 1.8 || player.position.y > 4.1) continue;
+        powerup.collected = true;
+        powerup.group.visible = false;
+        recordAchievementProgress("powerups");
+        if (powerup.type === "shield") shieldActive = true;
+        if (powerup.type === "magnet") magnetUntil = now + 12000;
+        if (powerup.type === "slow") slowUntil = now + 8000;
+        updatePowerTag(now);
       }
     }
 
@@ -1040,8 +1380,14 @@
       if (state !== "playing") return;
       const now = performance.now();
       const isBoosting = now < boostUntil;
-      const speed = 13.2 + Math.min(level - 1, 9) * 0.82 + (isBoosting ? 7 : 0);
-      distance += speed * delta;
+      gameElement.classList.toggle("is-slowed", now < slowUntil);
+      const tier = getTier(level);
+      const stageProgress = (level - tier.first) / Math.max(1, tier.last - tier.first);
+      const baseSpeed = 13.2 + tier.index * 3.2 + stageProgress * 1.7;
+      const speed = baseSpeed * (now < slowUntil ? 0.72 : 1) + (isBoosting ? 7 : 0);
+      const distanceDelta = speed * delta;
+      distance += distanceDelta;
+      recordDailyProgress("distance", distanceDelta);
       bestDistance = Math.max(bestDistance, distance);
       lane += (targetLane - lane) * Math.min(1, delta * 13);
       player.position.x += (LANE_X[Math.round(targetLane)] - player.position.x) * Math.min(1, delta * 13);
@@ -1060,6 +1406,7 @@
         player.position.y = ROAD_SURFACE_Y + BALL_RADIUS * squash;
       }
       playerBall.scale.set(1, squash, 1);
+      playerBall.material = shieldActive ? sceneMaterials.shield : sceneMaterials.red;
       playerBall.rotation.x = (-distance / (BALL_RADIUS * squash)) % (Math.PI * 2);
       player.visible = now >= invulnerableUntil || Math.floor(now / 90) % 2 === 0;
       playerShadow.position.x = player.position.x;
@@ -1071,14 +1418,30 @@
           hazard.group.rotation.y = animationTime * 1.5 + hazard.phase;
         }
       }
+      if (bossObject) {
+        bossObject.rotation.y = animationTime * 0.72;
+        bossObject.rotation.z = Math.sin(animationTime * 1.35) * 0.08;
+        bossObject.position.y = 4.7 + Math.sin(animationTime * 1.8) * 0.22;
+      }
       for (const crystal of stars) {
         if (crystal.collected) continue;
         crystal.group.rotation.y = animationTime * 1.8 + crystal.phase;
         crystal.group.position.y = 1.82 + Math.sin(animationTime * 3 + crystal.phase) * 0.17;
       }
+      for (const powerup of powerups) {
+        if (powerup.collected) continue;
+        powerup.group.rotation.y = animationTime * 1.6 + powerup.phase;
+        powerup.group.position.y = 1.95 + Math.sin(animationTime * 2.8 + powerup.phase) * 0.2;
+      }
       collectCrystals();
+      collectPowerups(now);
       checkHazards(now);
       if (state !== "playing") return;
+      const clearedBefore = bossAttacksCleared;
+      while (bossAttacksCleared < bossAttackDistances.length && distance > bossAttackDistances[bossAttacksCleared] + 2) {
+        bossAttacksCleared += 1;
+      }
+      if (bossAttacksCleared !== clearedBefore) updateScoreboard();
       if (distance >= level * LEVEL_LENGTH) completeLevel();
       if (Math.floor(animationTime * 2) !== Math.floor((animationTime - delta) * 2)) updateScoreboard();
       const cameraTarget = new THREE.Vector3(player.position.x * 0.48, player.position.y + 5.3, player.position.z + 11.5);
@@ -1213,6 +1576,7 @@
     });
 
     try {
+      renderDailyAndAchievements();
       initializeRenderer();
       createLevel(1);
       void refreshLeaderboard();

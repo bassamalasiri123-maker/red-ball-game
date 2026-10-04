@@ -1,3 +1,4 @@
+-- The current game scoring formula has a theoretical full-run ceiling below 52,000.
 create table if not exists public.scores (
   player_name text primary key,
   score integer not null check (score between 0 and 52000),
