@@ -338,6 +338,9 @@
   </style>
 </head>
 <body class="is-menu">
+  <!-- إضافة عنصر الصوت للموسيقى الهادئة -->
+  <audio id="bg-music" loop src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3"></audio>
+
   <main>
     <header>
       <div class="brand">
@@ -415,6 +418,9 @@
                       <option value="ring">٨ · الحلقة</option>
                       <option value="capsule">٩ · الكبسولة</option>
                       <option value="spike">١٠ · النجم الشائك</option>
+                      <!-- الأشكال الجديدة مضافة هنا -->
+                      <option value="pyramid">١١ · الهرم الذهبي</option>
+                      <option value="cylinder">١٢ · الأسطوانة الزرقاء</option>
                     </select>
                   </label>
                 </div>
@@ -521,6 +527,13 @@
       { id: "legendary-runner", label: "عدّاء أسطوري", detail: "اهزم الحراس الأربعة", key: "bosses", target: 4 },
       { id: "daily-hero", label: "بطل المهام", detail: "أكمل ٥ مهام يومية", key: "dailyCompletions", target: 5 }
     ];
+
+    const ROAD_SURFACE_Y = -0.08;
+    const BALL_RADIUS = 0.92;
+    const SLIDE_SQUASH = 0.56;
+    const BALL_GROUND_Y = ROAD_SURFACE_Y + BALL_RADIUS;
+    
+    // إضافة الأشكال الجديدة للمصفوفة
     const BALL_SHAPES = [
       { id: "classic", material: "red", hasFace: true, geometry: () => new THREE.SphereGeometry(BALL_RADIUS, 40, 32) },
       { id: "faceted", material: "ruby", geometry: () => new THREE.IcosahedronGeometry(BALL_RADIUS, 1) },
@@ -531,18 +544,23 @@
       { id: "knot", material: "violet", geometry: () => new THREE.TorusKnotGeometry(0.57, 0.24, 72, 10) },
       { id: "ring", material: "gold", geometry: () => new THREE.TorusGeometry(0.62, 0.29, 18, 36) },
       { id: "capsule", material: "green", geometry: () => new THREE.CapsuleGeometry(0.59, 0.42, 8, 24) },
-      { id: "spike", material: "red", geometry: () => new THREE.SphereGeometry(BALL_RADIUS * 0.7, 16, 12) }
+      { id: "spike", material: "red", geometry: () => new THREE.SphereGeometry(BALL_RADIUS * 0.7, 16, 12) },
+      // الأشكال الجديدة مضافة هنا
+      { id: "pyramid", material: "gold", geometry: () => new THREE.TetrahedronGeometry(BALL_RADIUS * 1.3, 0) },
+      { id: "cylinder", material: "blue", geometry: () => new THREE.CylinderGeometry(BALL_RADIUS * 0.85, BALL_RADIUS * 0.85, BALL_RADIUS * 1.6, 32) }
     ];
-    const ROAD_SURFACE_Y = -0.08;
-    const BALL_RADIUS = 0.92;
-    const SLIDE_SQUASH = 0.56;
-    const BALL_GROUND_Y = ROAD_SURFACE_Y + BALL_RADIUS;
+
     const LANE_X = [-3.2, 0, 3.2];
     const LEVEL_NAMES = ["جبل إيفرست", "ماترهورن", "جبل فوجي", "كليمنجارو", "مون بلان", "دينالي", "أكونكاغوا", "جبل رينييه", "جبال الهيمالايا", "جبال الألب"];
     const LEVEL_COLORS = [0x3b94b7, 0x26a782, 0x666bd5, 0xc57d39, 0x994b95, 0x3c9eae, 0x537fc8, 0x8270c9, 0xcf6445, 0x3b79db];
     const SKY_COLORS = [0x72b9db, 0x7194ad, 0xd39772, 0x62537e];
     const FOG_COLORS = [0xa6ced5, 0x9caeb9, 0xd8b292, 0x817292];
     const formatter = new Intl.NumberFormat("ar");
+    
+    // استدعاء عنصر الموسيقى وضبط مستواه
+    const bgMusic = document.querySelector("#bg-music");
+    bgMusic.volume = 0.3;
+
     const world = document.querySelector("#game-world");
     const gameElement = document.querySelector("#game");
     const overlay = document.querySelector("#overlay");
@@ -1529,6 +1547,11 @@
 
     function startGame() {
       unlockAudio();
+      
+      // تشغيل الموسيقى الهادئة عند بدء اللعبة
+      bgMusic.currentTime = 0;
+      bgMusic.play().catch(e => console.log("الصوت يحتاج تفاعل المستخدم"));
+      
       playerName = sanitizeName(nameInput.value);
       nameInput.setCustomValidity("");
       nameInput.value = playerName;
@@ -1578,6 +1601,9 @@
     }
 
     function showResult(title, message, eyebrow = "انتهى السباق") {
+      // إيقاف الموسيقى عند إظهار نتيجة
+      bgMusic.pause();
+      
       document.querySelector("#result-title").textContent = title;
       document.querySelector("#result-message").textContent = message;
       document.querySelector("#result-eyebrow").textContent = eyebrow;
@@ -1767,7 +1793,10 @@
       const now = performance.now();
       const isBoosting = now < boostUntil;
       gameElement.classList.toggle("is-slowed", now < slowUntil);
-      const baseSpeed = 13.2 + (level - 1) * 0.02;
+      
+      // هنا تم تعديل السرعة الأساسية ومعدل الزيادة لتكون اللعبة أسهل وتتدرج أبطأ
+      const baseSpeed = 10.5 + (level - 1) * 0.01;
+      
       const speed = baseSpeed * (now < slowUntil ? 0.72 : 1) + (isBoosting ? 7 : 0);
       const distanceDelta = speed * delta;
       distance += distanceDelta;
@@ -1858,6 +1887,10 @@
         invulnerableUntil = performance.now() + 1500;
       }
       state = "playing";
+      
+      // استئناف تشغيل الموسيقى عند المتابعة
+      bgMusic.play().catch(e => console.log(e));
+      
       overlay.hidden = true;
       gameElement.classList.remove("is-losing");
       document.querySelector("#pause-button").textContent = "⏸ إيقاف مؤقت";
@@ -1866,6 +1899,9 @@
     function togglePause() {
       if (state === "playing") {
         state = "paused";
+        // إيقاف الموسيقى عند التوقف المؤقت
+        bgMusic.pause(); 
+        
         document.querySelector("#pause-button").textContent = "▶ متابعة";
         showResult("وقفة محارب ⏸", "خذ وقتك، المسار ينتظرك. اضغط متابعة عشان تكمل مغامرتك.", "توقف مؤقت");
         document.querySelector("#result-button").textContent = "تابع اللعب";
