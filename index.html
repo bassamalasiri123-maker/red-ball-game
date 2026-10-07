@@ -375,6 +375,7 @@
     .challenge-chip { border-radius: 6px; border-color: #ffffff24; background: #07100de8; color: #d5e7dc; }
     .challenge-chip.boss { border-color: #ff456499; color: #ffb5bc; }
     .challenge-chip.power { border-color: #63f5e477; color: var(--cyan); }
+    .challenge-chip.speed { border-color: #63f5e477; color: var(--cyan); font-variant-numeric: tabular-nums; }
     .challenge-chip.mission { border-color: #c8ff5566; color: var(--acid); }
     .challenge-chip.dash { border-color: #ffffff33; color: #bdc8c8; }
     .challenge-chip.dash.is-ready { border-color: #c8ff55a6; color: var(--acid); box-shadow: 0 0 16px #c8ff5524; }
@@ -480,6 +481,7 @@
         <span class="challenge-chip" id="tier-tag">القسم ١ · البداية</span>
         <span class="challenge-chip boss" id="boss-tag" hidden></span>
         <span class="challenge-chip power" id="power-tag" hidden></span>
+        <span class="challenge-chip speed" id="speed-tag">السرعة ١٠٫٥ م/ث</span>
         <span class="challenge-chip dash" id="dash-tag">⚡ الاندفاع جاهز</span>
         <span class="challenge-chip mission" id="mission-tag"></span>
       </div>
@@ -617,6 +619,10 @@
     const MAX_LEVEL = 50;
     const MIN_STAGE_WAVES = 18;
     const MAX_STAGE_WAVES = 36;
+    const BASE_SPEED = 10.5;
+    const SPEED_INCREASE_PER_LEVEL = 0.14;
+    const MIN_EXTRA_HAZARD_CHANCE = 0.15;
+    const MAX_EXTRA_HAZARD_CHANCE = 0.55;
     const WORLD_LENGTH = LEVEL_LENGTH * MAX_LEVEL + 200;
     const MAX_LIVES = 3;
     const BOSS_LEVELS = [13, 26, 38, 50];
@@ -694,6 +700,7 @@
     const tierTag = document.querySelector("#tier-tag");
     const bossTag = document.querySelector("#boss-tag");
     const powerTag = document.querySelector("#power-tag");
+    const speedTag = document.querySelector("#speed-tag");
     const dashTag = document.querySelector("#dash-tag");
     const missionTag = document.querySelector("#mission-tag");
     const missionList = document.querySelector("#mission-list");
@@ -939,6 +946,10 @@
       return { ...TIERS[Math.max(0, index)], index: Math.max(0, index) };
     }
 
+    function getBaseSpeed(levelNumber) {
+      return BASE_SPEED + (levelNumber - 1) * SPEED_INCREASE_PER_LEVEL;
+    }
+
     function populateStageOptions() {
       const tier = TIERS[Number(tierSelect.value)];
       stageSelect.replaceChildren();
@@ -1123,6 +1134,8 @@
       if (now < slowUntil) active.push(`⏳ إبطاء ${Math.ceil((slowUntil - now) / 1000)}ث`);
       powerTag.hidden = active.length === 0;
       powerTag.textContent = active.join(" · ");
+      const currentSpeed = getBaseSpeed(level) * (now < slowUntil ? 0.72 : 1) + (now < boostUntil ? 7 : 0);
+      speedTag.textContent = `السرعة ${formatter.format(currentSpeed.toFixed(1))} م/ث`;
       const dashReady = now >= boostReadyAt;
       dashTag.classList.toggle("is-ready", dashReady);
       dashTag.textContent = dashReady
@@ -1501,7 +1514,8 @@
         const hazardLane = Math.floor(Math.random() * 3);
         const type = obstacleTypes[(index + levelNumber - 1) % obstacleTypes.length];
         createObstacle(type, hazardLane, waveDistance);
-        const extraHazardChance = 0.12 + ((levelNumber - 1) / (MAX_LEVEL - 1)) * 0.28;
+        const levelProgress = (levelNumber - 1) / (MAX_LEVEL - 1);
+        const extraHazardChance = MIN_EXTRA_HAZARD_CHANCE + levelProgress * (MAX_EXTRA_HAZARD_CHANCE - MIN_EXTRA_HAZARD_CHANCE);
         if (Math.random() < extraHazardChance) {
           const secondLane = (hazardLane + 1 + Math.floor(Math.random() * 2)) % 3;
           createObstacle(index % 2 === 0 ? "spike" : "block", secondLane, waveDistance);
@@ -1844,9 +1858,8 @@
       const isBoosting = now < boostUntil;
       gameElement.classList.toggle("is-slowed", now < slowUntil);
       
-      // هنا تم تعديل السرعة الأساسية ومعدل الزيادة لتكون اللعبة أسهل وتتدرج أبطأ
-      const baseSpeed = 10.5 + (level - 1) * 0.01;
-      
+      const baseSpeed = getBaseSpeed(level);
+
       const speed = baseSpeed * (now < slowUntil ? 0.72 : 1) + (isBoosting ? 7 : 0);
       const distanceDelta = speed * delta;
       distance += distanceDelta;
