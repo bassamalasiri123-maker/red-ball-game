@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07111e">
-  <title>الكرة الحمراء 3D | مغامرة المسارات</title>
+  <meta name="description" content="LAST PULSE by GAMES CLUB: a 3D runner escaping a collapsing facility.">
+  <title>LAST PULSE | GAMES CLUB</title>
   <style>
     :root {
       color-scheme: dark;
@@ -335,6 +336,117 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
+
+    :root {
+      color: #eefcf9;
+      background: #060a0e;
+      --acid: #c8ff55;
+      --cyan: #63f5e4;
+      --muted: #91a5a8;
+      --line: #c8ff5526;
+    }
+
+    body {
+      background:
+        radial-gradient(ellipse at 50% -18%, #173a3b 0, transparent 48%),
+        repeating-linear-gradient(0deg, transparent 0 47px, #9cf7dc08 48px),
+        linear-gradient(145deg, #0c1519, #060a0e 68%);
+    }
+
+    main { width: min(1520px, 100%); gap: 10px; }
+    header { position: relative; padding: 10px 14px; border: 1px solid #b4d5d41c; border-radius: 14px; background: linear-gradient(110deg, #111d20e8, #0a1215d9); }
+    .brand-mark { border-radius: 12px; color: var(--acid); border-color: #c8ff5555; background: linear-gradient(145deg, #283526, #111b16); box-shadow: 0 0 25px #baff3022, inset 0 1px #ffffff35; font-size: .82rem; font-weight: 950; letter-spacing: -.08em; }
+    .studio-label { margin: 0 0 2px; color: var(--acid); font-size: .57rem; font-weight: 900; letter-spacing: .2em; }
+    h1 { letter-spacing: .025em; }
+    .subtitle { color: #9eb7b5; }
+    .stats { gap: 6px; }
+    .stat { min-width: 76px; border-radius: 9px; border-color: #ffffff13; background: #101a1ddf; box-shadow: none; }
+    .stat span { color: #8da3a4; }
+    .stat strong { font-size: .96rem; }
+    .stat.score strong { color: var(--acid); }
+    .stat.crystals strong { color: var(--cyan); }
+    .game { border: 1px solid #80e9d22e; border-radius: 15px; background: #101a1d; box-shadow: 0 22px 75px #0009, 0 0 35px #42ebc00c, inset 0 1px #ffffff16; }
+    .game::after { background: linear-gradient(180deg, #060a0e77, transparent 22%, transparent 78%, #060a0e99); }
+    .stage-tag, .distance-tag { border-radius: 7px; border-color: #a5ff5a45; background: #07100ddd; color: #dff9e6; letter-spacing: .02em; }
+    .distance-tag { color: var(--acid); }
+    .progress-track { height: 5px; border-radius: 0; background: #ffffff20; }
+    .progress-bar { border-radius: 0; background: linear-gradient(90deg, var(--cyan), var(--acid)); box-shadow: 0 0 12px #c8ff5577; }
+    .challenge-hud { top: 76px; }
+    .challenge-chip { border-radius: 6px; border-color: #ffffff24; background: #07100de8; color: #d5e7dc; }
+    .challenge-chip.boss { border-color: #ff456499; color: #ffb5bc; }
+    .challenge-chip.power { border-color: #63f5e477; color: var(--cyan); }
+    .challenge-chip.mission { border-color: #c8ff5566; color: var(--acid); }
+    .challenge-chip.dash { border-color: #ffffff33; color: #bdc8c8; }
+    .challenge-chip.dash.is-ready { border-color: #c8ff55a6; color: var(--acid); box-shadow: 0 0 16px #c8ff5524; }
+    .overlay { background: #030709d9; backdrop-filter: blur(14px); }
+    .panel {
+      width: min(100%, 980px);
+      padding: clamp(20px, 4vw, 38px);
+      border: 1px solid #a0d3c82d;
+      border-radius: 15px;
+      background:
+        linear-gradient(135deg, #c8ff550a 0 1px, transparent 1px 28px),
+        radial-gradient(ellipse at 88% 0, #60dcb51c, transparent 42%),
+        linear-gradient(145deg, #111c1e, #0a1114);
+      box-shadow: 0 30px 100px #000c, inset 0 1px #ffffff17;
+    }
+    .panel-grid { grid-template-columns: minmax(0, 1.15fr) minmax(250px, .85fr); gap: 24px; }
+    .eyebrow { color: var(--acid); letter-spacing: .17em; }
+    .panel h2 { letter-spacing: -.025em; }
+    .welcome-brand { gap: 17px; }
+    .welcome-orb {
+      position: relative;
+      border-radius: 17px;
+      border: 1px solid #c8ff5577;
+      background: radial-gradient(circle at 35% 30%, #fff5bd 0 4%, #dbff76 12%, #76db4c 38%, #183d36 72%, #091615);
+      box-shadow: 0 0 0 5px #c8ff550c, 0 0 35px #9cff3940, inset -8px -10px 16px #071d1788, inset 5px 5px 12px #ffffff77;
+    }
+    .welcome-title span { color: var(--acid); }
+    .panel-copy { color: #b7c9c5; }
+    .objectives-list { color: #cadbd5; }
+    .objectives-list li::marker { color: var(--acid); }
+    .name-label, .stage-selectors label { color: #d1e2dc; }
+    .stage-selectors select, input {
+      border-color: #8eaaa54d;
+      border-radius: 8px;
+      background: #080f11;
+    }
+    input:focus, .stage-selectors select:focus { border-color: var(--acid); box-shadow: 0 0 0 3px #c8ff551b; }
+    button {
+      border-radius: 8px;
+      color: #10170b;
+      background: linear-gradient(135deg, #e3ff8a, #a9e83a);
+      box-shadow: 0 8px 24px #b7f74924, inset 0 1px #ffffffa6;
+    }
+    button:focus-visible { outline-color: var(--cyan); }
+    button.secondary { color: #dbe8e3; border-color: #ffffff26; background: #172224; }
+    .controls-hint { color: #8ca19c; }
+    .leaderboard, .meta-card { border-color: #ffffff1c; border-radius: 10px; background: #080f11d9; }
+    .leader-row { border-radius: 6px; }
+    .leader-rank, .leader-note { color: var(--acid); }
+    .leader-score, .meta-progress { color: var(--cyan); }
+    .meta-card h3 { color: #e1efe8; }
+    .mission-row, .achievement-row { border-radius: 6px; }
+    .mission-row.is-complete, .achievement-row.is-unlocked { color: #d7ffa0; background: #a5e84c12; }
+    .bottom-bar { min-height: 50px; }
+    .game-actions button { border-radius: 7px; }
+    .control-group button { border-radius: 9px; border-color: #9ddbd333; background: linear-gradient(145deg, #203436, #101c1f); }
+    .control-group button.jump { color: #10170b; border-color: #dfff87; background: linear-gradient(145deg, #e3ff8a, #a9e83a); }
+    .control-group button.dash { color: var(--acid); }
+    .submit-state[data-kind="success"] { color: var(--acid); }
+
+    @media (max-width: 760px) {
+      header { padding: 8px; border-radius: 10px; }
+      .stat { background: #101a1def; }
+      .panel { border-radius: 12px; }
+      .panel-grid { grid-template-columns: 1fr; gap: 15px; }
+      .welcome-orb { border-radius: 14px; }
+      .challenge-hud { top: 66px; }
+    }
+
+    @media (max-height: 620px) and (orientation: landscape) {
+      .panel { border-radius: 10px; }
+    }
   </style>
 </head>
 <body class="is-menu">
@@ -344,29 +456,31 @@
   <main>
     <header>
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true">●</div>
+        <div class="brand-mark" aria-hidden="true">GC</div>
         <div>
-          <h1>الكرة الحمراء <span style="color:#79eee2">3D</span></h1>
-          <p class="subtitle">اهرب من الفخاخ، اجمع البلورات، ونافس أبطال العالم</p>
+          <p class="studio-label">GAMES CLUB</p>
+          <h1>LAST PULSE <span style="color:#c8ff55">/// 3D</span></h1>
+          <p class="subtitle">المنشأة تنهار. النواة هي فرصتك الوحيدة للخروج.</p>
         </div>
       </div>
-      <div class="stats" aria-label="نتيجة اللعب">
+      <div class="stats" aria-label="حالة المهمة">
         <div class="stat score"><span>النقاط</span><strong id="score">٠</strong></div>
-        <div class="stat crystals"><span>البلورات</span><strong id="crystals">٠</strong></div>
-        <div class="stat"><span>المرحلة</span><strong id="level">١ / ٥٠</strong></div>
-        <div class="stat"><span>القلوب</span><strong id="lives">٣</strong></div>
+        <div class="stat crystals"><span>الشظايا</span><strong id="crystals">٠</strong></div>
+        <div class="stat"><span>المنطقة</span><strong id="level">١ / ٥٠</strong></div>
+        <div class="stat"><span>الطاقة</span><strong id="lives">٣</strong></div>
       </div>
     </header>
 
-    <section class="game" id="game" aria-label="ساحة الكرة الحمراء ثلاثية الأبعاد">
-      <div id="game-world" aria-label="مشهد اللعبة ثلاثي الأبعاد"></div>
-      <div class="stage-tag" id="stage-tag">المرحلة الأولى · وادي الفجر</div>
+    <section class="game" id="game" aria-label="ممر الهروب ثلاثي الأبعاد">
+      <div id="game-world" aria-label="الممر الصناعي ثلاثي الأبعاد"></div>
+      <div class="stage-tag" id="stage-tag">منطقة ٠١ · نقطة الاختراق</div>
       <div class="distance-tag" id="distance-tag">000 m</div>
       <div class="progress-track" aria-label="تقدم المرحلة"><div class="progress-bar" id="progress-bar"></div></div>
       <div class="challenge-hud" aria-live="polite">
         <span class="challenge-chip" id="tier-tag">القسم ١ · البداية</span>
         <span class="challenge-chip boss" id="boss-tag" hidden></span>
         <span class="challenge-chip power" id="power-tag" hidden></span>
+        <span class="challenge-chip dash" id="dash-tag">⚡ الاندفاع جاهز</span>
         <span class="challenge-chip mission" id="mission-tag"></span>
       </div>
       <div class="overlay" id="overlay">
@@ -376,40 +490,39 @@
               <div class="welcome-brand">
                 <span class="welcome-orb" aria-hidden="true"></span>
                 <div>
-                  <p class="eyebrow">مغامرة ثلاثية الأبعاد</p>
-                  <h2 class="welcome-title">الكرة الحمراء <span>3D</span></h2>
+                  <p class="eyebrow">GAMES CLUB · بروتوكول هروب ٠١</p>
+                  <h2 class="welcome-title">LAST <span>PULSE</span></h2>
                 </div>
               </div>
-              <p class="panel-copy">انطلق عبر ٥٠ مرحلة جبلية في أربعة أقسام متصاعدة الصعوبة. اختر نقطة البداية بحرية، واستخدم القوى، وتجاوز الحراس، وأكمل مهامك اليومية.</p>
-              <ul class="objectives-list" aria-label="أهداف اللعبة">
-                <li>الكرة تحتاج إلى تسريع وتجاوز العوائق عبر ٣ مسارات متحركة في كل مرحلة.</li>
-                <li>تزداد صعوبة المرحلة كلما ارتفعت المسافة، ويُستدعى الحارس عند نهاية كل قسم.</li>
-                <li>يرتفع التقدم عندما تجمع البلورات وتكمل المسافة وتخترق المراحل بنجاح.</li>
-                <li>أكمل الأهداف اليومية وافتح الشارات والإنجازات التي تُحفظ محليًا.</li>
-                <li>نظام القوة يضمن الدفاع من الضربة، وجذب البلورات القريبة، وتخفيف سرعة الحركة.</li>
+              <p class="panel-copy">النواة الحيّة هي آخر طاقة في منشأة على وشك الانفجار. اخترق ٥٠ منطقة، تفادَ أنظمة الدفاع، واجمع الشظايا قبل أن يُغلق الممر إلى الأبد.</p>
+              <ul class="objectives-list" aria-label="بروتوكول المهمة">
+                <li>بدّل بين ثلاثة مسارات، واقفز فوق الحواجز، وانزلق تحت الطائرات المسيّرة.</li>
+                <li>الاندفاع يفتح نافذة نجاة قصيرة؛ راقب شحنته قبل أن تحتاجها.</li>
+                <li>أربعة حراس آليين يسدّون طريق الخروج. لكل واحد ثلاث موجات هجوم.</li>
+                <li>اجمع الشظايا والقوى، وأنجز تحدياتك اليومية لفتح سجلك.</li>
               </ul>
               <form id="name-form">
-                <label class="name-label" for="player-name">اسمك في التصنيف العالمي — اختياري</label>
+                <label class="name-label" for="player-name">معرّف الطيّار · اختياري للتصنيف العالمي</label>
                 <div class="name-row">
                   <input id="player-name" name="playerName" maxlength="18" autocomplete="off" placeholder="اتركه فارغًا للعب كضيف">
-                  <button type="submit" id="play-button">ابدأ المغامرة</button>
+                  <button type="submit" id="play-button">ابدأ الاختراق ↗</button>
                 </div>
                 <div class="stage-selectors">
-                  <label for="tier-select">قسم الصعوبة
+                  <label for="tier-select">بروتوكول الإنذار
                     <select id="tier-select" name="tier">
-                      <option value="0">البداية · سهل</option>
-                      <option value="1">التحدي · متوسط</option>
-                      <option value="2">الخبرة · صعب</option>
-                      <option value="3">الأساطير · خبير</option>
+                      <option value="0">الدخول · مستقر</option>
+                      <option value="1">الاحتواء · متصاعد</option>
+                      <option value="2">الانهيار · خطير</option>
+                      <option value="3">الإخلاء · حرج</option>
                     </select>
                   </label>
-                  <label for="stage-select">اختر المرحلة
+                  <label for="stage-select">اختر منطقة الاختراق
                     <select id="stage-select" name="stage"></select>
                   </label>
                   <label for="ball-shape">شكل الكرة
                     <select id="ball-shape" name="ballShape">
-                      <option value="classic">١ · الكرة الكلاسيكية</option>
-                      <option value="faceted">٢ · الكرة البلورية</option>
+                      <option value="classic">١ · النواة الحمراء</option>
+                      <option value="faceted">٢ · النواة البلورية</option>
                       <option value="ruby">٣ · جوهرة الياقوت</option>
                       <option value="diamond">٤ · الماسة</option>
                       <option value="prism">٥ · المنشور</option>
@@ -418,31 +531,30 @@
                       <option value="ring">٨ · الحلقة</option>
                       <option value="capsule">٩ · الكبسولة</option>
                       <option value="spike">١٠ · النجم الشائك</option>
-                      <!-- الأشكال الجديدة مضافة هنا -->
                       <option value="pyramid">١١ · الهرم الذهبي</option>
                       <option value="cylinder">١٢ · الأسطوانة الزرقاء</option>
                     </select>
                   </label>
                 </div>
               </form>
-              <p class="controls-hint">اختر أي قسم ومرحلة للبدء مباشرة، دون الحاجة إلى إنهاء المراحل السابقة. الاسم اختياري لحفظ نتيجتك.<br>كمبيوتر: ← → تغيير المسار · ↑ أو مسافة للقفز · ↓ للانزلاق · Shift للاندفاع.<br>جوال: اسحب لتغيير المسار أو للقفز والانزلاق، وانقر مرتين للاندفاع. الدرع يصد ضربة، والمغناطيس يجذب البلورات بحركة مرئية، والساعة تبطئ السرعة.</p>
+              <p class="controls-hint">اختر أي منطقة للبدء مباشرة. الاسم اختياري؛ الضيف يستطيع اللعب دون إرسال نتيجة.<br>كمبيوتر: ← → مسار · ↑ أو مسافة قفز · ↓ انزلاق · Shift اندفاع.<br>جوال: اسحب للحركة؛ انقر مرتين للاندفاع. الدرع يصد ضربة، والمغناطيس يجذب الشظايا، ومخفّف الزمن يبطئ المنشأة.</p>
             </div>
             <aside class="leaderboard" aria-label="قائمة أعلى اللاعبين">
               <div class="leader-head">
-                <h3>🏆 أعلى الأبطال</h3>
+                <h3>◈ سجلات الطيّارين</h3>
                 <span class="leader-state" id="leader-state">جارٍ تحميل النتائج…</span>
               </div>
               <ol class="leader-list" id="leader-list" aria-live="polite"></ol>
-              <p class="leader-note" id="leader-note">كل ٢ متر = نقطة · كل بلورة = ٣ نقاط · وكل مرحلة = ١٢٠ نقطة</p>
+              <p class="leader-note" id="leader-note">كل ٢ متر = نقطة · كل شظية = ٣ نقاط · اختراق المنطقة = ١٢٠ نقطة</p>
             </aside>
           </div>
           <div class="meta-panels">
             <section class="meta-card" aria-labelledby="mission-heading">
-              <h3 id="mission-heading">📜 مهام اليوم</h3>
+              <h3 id="mission-heading">▤ تحديات اليوم</h3>
               <ul class="mission-list" id="mission-list"></ul>
             </section>
             <section class="meta-card" aria-labelledby="achievement-heading">
-              <h3 id="achievement-heading">🏅 الإنجازات</h3>
+              <h3 id="achievement-heading">◇ سجل الإنجازات</h3>
               <ul class="achievement-list" id="achievement-list"></ul>
             </section>
           </div>
@@ -451,8 +563,8 @@
         <section class="panel" id="result-panel" hidden>
           <div class="panel-grid">
             <div>
-              <p class="eyebrow" id="result-eyebrow">انتهى السباق</p>
-              <h2 id="result-title">أحسنت يا بطل!</h2>
+              <p class="eyebrow" id="result-eyebrow">انتهت المحاكاة</p>
+              <h2 id="result-title">انقطع الاتصال</h2>
               <p class="panel-copy" id="result-message"></p>
               <p class="submit-state" id="submit-state" aria-live="polite"></p>
               <div class="result-actions">
@@ -462,7 +574,7 @@
             </div>
             <aside class="leaderboard" aria-label="قائمة أعلى اللاعبين">
               <div class="leader-head">
-                <h3>🏆 أعلى الأبطال</h3>
+                <h3>◈ سجلات الطيّارين</h3>
                 <span class="leader-state">أفضل النتائج</span>
               </div>
               <ol class="leader-list" id="result-leader-list"></ol>
@@ -474,7 +586,7 @@
 
     <div class="bottom-bar">
       <div class="game-actions">
-        <button type="button" id="pause-button">⏸ إيقاف مؤقت</button>
+        <button type="button" id="pause-button">Ⅱ إيقاف مؤقت</button>
       </div>
       <div class="control-row" aria-label="أزرار تحكم لوحة المفاتيح">
         <div class="control-group movement-controls" role="group" aria-label="تغيير المسار">
@@ -509,20 +621,20 @@
     const MAX_LIVES = 3;
     const BOSS_LEVELS = [13, 26, 38, 50];
     const TIERS = [
-      { name: "البداية", first: 1, last: 13 },
-      { name: "التحدي", first: 14, last: 26 },
-      { name: "الخبرة", first: 27, last: 38 },
-      { name: "الأساطير", first: 39, last: 50 }
+      { name: "الدخول", first: 1, last: 13 },
+      { name: "الاحتواء", first: 14, last: 26 },
+      { name: "الانهيار", first: 27, last: 38 },
+      { name: "الإخلاء", first: 39, last: 50 }
     ];
     const DAILY_MISSIONS = [
-      { id: "crystals", label: "اجمع ١٥ بلورة", target: 15, reward: "شارة البلورات" },
+      { id: "crystals", label: "اجمع ١٥ شظية", target: 15, reward: "شارة الشظايا" },
       { id: "distance", label: "اقطع ١٬٥٠٠ متر", target: 1500, reward: "شارة المسافر" },
       { id: "stages", label: "أكمل مرحلتين", target: 2, reward: "شارة المتمرس" }
     ];
     const ACHIEVEMENT_DEFINITIONS = [
-      { id: "first-crystal", label: "أول بلورة", detail: "اجمع أول بلورة", key: "crystals", target: 1 },
-      { id: "crystal-collector", label: "جامع البلورات", detail: "اجمع ١٠٠ بلورة", key: "crystals", target: 100 },
-      { id: "power-user", label: "خبير القوى", detail: "اجمع ٢٥ قوة", key: "powerups", target: 25 },
+      { id: "first-crystal", label: "أول شظية", detail: "اجمع أول شظية", key: "crystals", target: 1 },
+      { id: "crystal-collector", label: "جامع الشظايا", detail: "اجمع ١٠٠ شظية", key: "crystals", target: 100 },
+      { id: "power-user", label: "مسيطر الأنظمة", detail: "اجمع ٢٥ قوة", key: "powerups", target: 25 },
       { id: "guardian-slayer", label: "قاهر الحراس", detail: "اهزم أول حارس", key: "bosses", target: 1 },
       { id: "legendary-runner", label: "عدّاء أسطوري", detail: "اهزم الحراس الأربعة", key: "bosses", target: 4 },
       { id: "daily-hero", label: "بطل المهام", detail: "أكمل ٥ مهام يومية", key: "dailyCompletions", target: 5 }
@@ -551,10 +663,10 @@
     ];
 
     const LANE_X = [-3.2, 0, 3.2];
-    const LEVEL_NAMES = ["جبل إيفرست", "ماترهورن", "جبل فوجي", "كليمنجارو", "مون بلان", "دينالي", "أكونكاغوا", "جبل رينييه", "جبال الهيمالايا", "جبال الألب"];
-    const LEVEL_COLORS = [0x3b94b7, 0x26a782, 0x666bd5, 0xc57d39, 0x994b95, 0x3c9eae, 0x537fc8, 0x8270c9, 0xcf6445, 0x3b79db];
-    const SKY_COLORS = [0x72b9db, 0x7194ad, 0xd39772, 0x62537e];
-    const FOG_COLORS = [0xa6ced5, 0x9caeb9, 0xd8b292, 0x817292];
+    const LEVEL_NAMES = ["بوابة الصيانة", "الممر الحيوي", "مفاعل الجاذبية", "حقل النبضات", "مدار التبريد", "قبو البيانات", "الجسر المعلّق", "مصفوفة الليزر", "الميناء المداري", "قلب المنشأة"];
+    const LEVEL_COLORS = [0x58c7a0, 0x39aeb1, 0x6779b9, 0xb4774d, 0x9b5f9c, 0x39b3a3, 0x537fc8, 0x8270c9, 0xcf6445, 0x65a84e];
+    const SKY_COLORS = [0x102c30, 0x17292f, 0x32252e, 0x242137];
+    const FOG_COLORS = [0x203a38, 0x263639, 0x453038, 0x302c42];
     const formatter = new Intl.NumberFormat("ar");
     
     // استدعاء عنصر الموسيقى وضبط مستواه
@@ -582,6 +694,7 @@
     const tierTag = document.querySelector("#tier-tag");
     const bossTag = document.querySelector("#boss-tag");
     const powerTag = document.querySelector("#power-tag");
+    const dashTag = document.querySelector("#dash-tag");
     const missionTag = document.querySelector("#mission-tag");
     const missionList = document.querySelector("#mission-list");
     const achievementList = document.querySelector("#achievement-list");
@@ -779,9 +892,9 @@
     const achievementState = loadAchievementState();
 
     const sceneMaterials = {
-      floor: new THREE.MeshStandardMaterial({ color: 0x102139, roughness: 0.9 }),
-      road: new THREE.MeshStandardMaterial({ color: 0x182d48, roughness: 0.76 }),
-      lane: new THREE.MeshStandardMaterial({ color: 0x82dcdb, emissive: 0x174947, emissiveIntensity: 0.8, roughness: 0.38 }),
+      floor: new THREE.MeshStandardMaterial({ color: 0x101719, roughness: 0.9 }),
+      road: new THREE.MeshStandardMaterial({ color: 0x172224, roughness: 0.76, metalness: 0.15 }),
+      lane: new THREE.MeshStandardMaterial({ color: 0xb5ff62, emissive: 0x4c8129, emissiveIntensity: 1.05, roughness: 0.38 }),
       red: new THREE.MeshStandardMaterial({ color: 0xee304d, roughness: 0.25, metalness: 0.1 }),
       ruby: new THREE.MeshStandardMaterial({ color: 0xc52349, emissive: 0x5d061c, emissiveIntensity: 0.28, roughness: 0.24, metalness: 0.38 }),
       blue: new THREE.MeshStandardMaterial({ color: 0x48a9ed, emissive: 0x123e75, emissiveIntensity: 0.35, roughness: 0.24, metalness: 0.3 }),
@@ -797,18 +910,20 @@
       magnet: new THREE.MeshStandardMaterial({ color: 0xf38aff, emissive: 0xa729d8, emissiveIntensity: 1.1, metalness: 0.35, roughness: 0.2 }),
       slow: new THREE.MeshStandardMaterial({ color: 0xffd45e, emissive: 0xe88711, emissiveIntensity: 1.1, metalness: 0.45, roughness: 0.2 }),
       boss: new THREE.MeshStandardMaterial({ color: 0x7e1027, emissive: 0x8f001c, emissiveIntensity: 0.7, metalness: 0.45, roughness: 0.28 }),
-      scenery: new THREE.MeshStandardMaterial({ color: 0x244365, roughness: 0.92 })
+      scenery: new THREE.MeshStandardMaterial({ color: 0x253536, roughness: 0.92 })
     };
-    const mountainMaterials = [
-      0x426b78, 0x526b78, 0x78675e, 0x514b73
-    ].map((color) => new THREE.MeshStandardMaterial({ color, roughness: 1, flatShading: true }));
-    const distantMountainMaterials = [
-      0x345363, 0x405969, 0x665a5c, 0x403b62
-    ].map((color) => new THREE.MeshStandardMaterial({ color, roughness: 1, flatShading: true }));
-    const snowMaterial = new THREE.MeshStandardMaterial({ color: 0xe5f2f0, roughness: 0.95, flatShading: true });
 
     function isLeaderboardConfigured() {
       return /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(SUPABASE_URL) && SUPABASE_ANON_KEY.length > 20;
+    }
+
+    function loadSavedPlayerName() {
+      try {
+        return sanitizeName(localStorage.getItem(PLAYER_NAME_KEY) || "");
+      } catch (error) {
+        console.error("تعذرت قراءة اسم الطيار المحفوظ.", error);
+        return "";
+      }
     }
 
     function sanitizeName(value) {
@@ -830,7 +945,7 @@
       for (let stageNumber = tier.first; stageNumber <= tier.last; stageNumber += 1) {
         const option = document.createElement("option");
         option.value = String(stageNumber);
-        option.textContent = `المرحلة ${formatter.format(stageNumber)} · ${getLevelName(stageNumber)}`;
+        option.textContent = `المنطقة ${formatter.format(stageNumber)} · ${getLevelName(stageNumber)}`;
         stageSelect.append(option);
       }
       stageSelect.value = String(tier.first);
@@ -859,105 +974,29 @@
       updateScoreboard();
     }
 
-    function appendMountainTriangles(vertices, x, z, radius, height, baseY, snow = false) {
-      const ringY = snow ? baseY + height * 0.7 : baseY;
-      const ringRadius = snow ? radius * 0.32 : radius;
-      for (let side = 0; side < 6; side += 1) {
-        const angleA = (side / 6) * Math.PI * 2;
-        const angleB = ((side + 1) / 6) * Math.PI * 2;
-        vertices.push(
-          x, baseY + height, z,
-          x + Math.cos(angleA) * ringRadius, ringY, z + Math.sin(angleA) * ringRadius,
-          x + Math.cos(angleB) * ringRadius, ringY, z + Math.sin(angleB) * ringRadius
-        );
-      }
-    }
-
-    function createMountainBackdrop() {
-      const nearVertices = mountainMaterials.map(() => []);
-      const distantVertices = distantMountainMaterials.map(() => []);
-      const snowVertices = [];
-      const baseY = ROAD_SURFACE_Y - 0.2;
-      for (let stageNumber = 1; stageNumber <= MAX_LEVEL; stageNumber += 1) {
-        const tier = getTier(stageNumber);
-        const stageCenter = -((stageNumber - 1) * LEVEL_LENGTH + LEVEL_LENGTH / 2);
-        for (const side of [-1, 1]) {
-          for (let peak = 0; peak < 7; peak += 1) {
-            const radius = 15 + (peak % 4) * 5;
-            const height = 30 + ((stageNumber * 5 + peak * 7) % 6) * 9;
-            const x = side * (33 + (peak % 4) * 9);
-            const z = stageCenter + (peak - 3) * 60;
-            appendMountainTriangles(nearVertices[tier.index], x, z, radius, height, baseY);
-            if (height >= 44) appendMountainTriangles(snowVertices, x, z, radius, height, baseY, true);
-            const distantHeight = height * 0.72;
-            appendMountainTriangles(
-              distantVertices[tier.index],
-              side * (67 + (peak % 2) * 10),
-              z - 28,
-              radius * 1.35,
-              distantHeight,
-              baseY
-            );
+    function createFacilityBackdrop() {
+      const frames = [];
+      const warningLights = [];
+      const transform = new THREE.Object3D();
+      for (let stageIndex = 0; stageIndex < MAX_LEVEL; stageIndex += 1) {
+        const stageStartZ = -stageIndex * LEVEL_LENGTH;
+        const accent = LEVEL_COLORS[stageIndex % LEVEL_COLORS.length];
+        for (let segment = 0; segment < 5; segment += 1) {
+          const z = stageStartZ - 28 - segment * 72;
+          for (const side of [-1, 1]) {
+            frames.push({ x: side * 8.2, y: 4.6, z, sx: 0.42, sy: 9.2, sz: 0.5, color: 0x27383a });
+            warningLights.push({ x: side * 7.88, y: 4.7, z, sx: 0.055, sy: 7.7, sz: 0.09, color: accent });
           }
+          frames.push({ x: 0, y: 9.15, z, sx: 16.5, sy: 0.38, sz: 0.5, color: 0x26393b });
+          warningLights.push({ x: 0, y: 8.91, z, sx: 12.5, sy: 0.045, sz: 0.07, color: accent });
         }
       }
-      const addLandscapeMesh = (vertices, material) => {
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
-        geometry.computeVertexNormals();
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.castShadow = false;
-        mesh.receiveShadow = false;
-        scene.add(mesh);
-      };
-      nearVertices.forEach((vertices, index) => addLandscapeMesh(vertices, mountainMaterials[index]));
-      distantVertices.forEach((vertices, index) => addLandscapeMesh(vertices, distantMountainMaterials[index]));
-      addLandscapeMesh(snowVertices, snowMaterial);
-      createVegetationBackdrop();
-    }
-
-    function createVegetationBackdrop() {
-      const trunks = [];
-      const canopies = [];
-      const shrubs = [];
-      const colors = [0x2b694d, 0x397e51, 0x568b50, 0x7a9d58];
-      for (let stageNumber = 0; stageNumber < MAX_LEVEL; stageNumber += 1) {
-        const stageCenter = -(stageNumber * LEVEL_LENGTH + LEVEL_LENGTH / 2);
-        for (const side of [-1, 1]) {
-          for (let treeIndex = 0; treeIndex < 5; treeIndex += 1) {
-            const treeX = side * (8.5 + treeIndex * 3.4 + Math.random() * 1.4);
-            const treeZ = stageCenter + (treeIndex - 2) * 61 + (Math.random() - 0.5) * 24;
-            const scale = 0.72 + Math.random() * 0.6;
-            const tint = new THREE.Color(colors[Math.floor(Math.random() * colors.length)]);
-            trunks.push({ x: treeX, y: 0.85 * scale, z: treeZ, sx: 0.22 * scale, sy: 0.85 * scale, sz: 0.22 * scale, color: 0x76543b });
-            for (let layer = 0; layer < 3; layer += 1) {
-              const layerScale = (1.05 - layer * 0.19) * scale;
-              canopies.push({
-                x: treeX, y: (1.12 + layer * 0.48) * scale, z: treeZ,
-                sx: layerScale, sy: 0.9 * scale, sz: layerScale, color: tint
-              });
-            }
-          }
-          for (let shrubIndex = 0; shrubIndex < 8; shrubIndex += 1) {
-            shrubs.push({
-              x: side * (7.8 + Math.random() * 12),
-              y: 0.3 + Math.random() * 0.2,
-              z: stageCenter + (shrubIndex - 3.5) * 43 + (Math.random() - 0.5) * 20,
-              sx: 0.55 + Math.random() * 0.55,
-              sy: 0.45 + Math.random() * 0.3,
-              sz: 0.55 + Math.random() * 0.55,
-              color: colors[Math.floor(Math.random() * colors.length)]
-            });
-          }
-        }
-      }
-      const addInstances = (geometry, material, entries) => {
-        const mesh = new THREE.InstancedMesh(geometry, material, entries.length);
-        const transform = new THREE.Object3D();
+      const addInstances = (entries, material) => {
+        const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), material, entries.length);
         entries.forEach((entry, index) => {
           transform.position.set(entry.x, entry.y, entry.z);
           transform.scale.set(entry.sx, entry.sy, entry.sz);
-          transform.rotation.y = entry.rotation || 0;
+          transform.rotation.set(0, 0, 0);
           transform.updateMatrix();
           mesh.setMatrixAt(index, transform.matrix);
           mesh.setColorAt(index, new THREE.Color(entry.color));
@@ -968,9 +1007,8 @@
         mesh.receiveShadow = false;
         scene.add(mesh);
       };
-      addInstances(new THREE.CylinderGeometry(0.7, 0.95, 1, 7), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }), trunks);
-      addInstances(new THREE.ConeGeometry(1, 1.25, 7), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, flatShading: true }), canopies);
-      addInstances(new THREE.DodecahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, flatShading: true }), shrubs);
+      addInstances(frames, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.75, metalness: 0.62 }));
+      addInstances(warningLights, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.4, roughness: 0.3 }));
     }
 
     function saveDailyState() {
@@ -1085,6 +1123,11 @@
       if (now < slowUntil) active.push(`⏳ إبطاء ${Math.ceil((slowUntil - now) / 1000)}ث`);
       powerTag.hidden = active.length === 0;
       powerTag.textContent = active.join(" · ");
+      const dashReady = now >= boostReadyAt;
+      dashTag.classList.toggle("is-ready", dashReady);
+      dashTag.textContent = dashReady
+        ? "⚡ الاندفاع جاهز"
+        : `⚡ شحن الاندفاع ${Math.ceil((boostReadyAt - now) / 1000)}ث`;
     }
 
     function localScores() {
@@ -1166,9 +1209,9 @@
       livesElement.textContent = formatter.format(lives);
       distanceTag.textContent = `${String(Math.floor(bestDistance)).padStart(3, "0")} m`;
       progressBar.style.width = `${Math.min(100, ((distance - stageStart) / LEVEL_LENGTH) * 100)}%`;
-      stageTag.textContent = `المرحلة ${formatter.format(level)} · ${getLevelName(level)}`;
+      stageTag.textContent = `منطقة ${formatter.format(level)} · ${getLevelName(level)}`;
       const tier = getTier(level);
-      tierTag.textContent = `القسم ${formatter.format(tier.index + 1)} · ${tier.name}`;
+      tierTag.textContent = `بروتوكول ${formatter.format(tier.index + 1)} · ${tier.name}`;
       bossTag.hidden = !BOSS_LEVELS.includes(level);
       if (!bossTag.hidden) bossTag.textContent = `الحارس ${formatter.format(bossAttacksCleared)} / ٣`;
       updatePowerTag(performance.now());
@@ -1259,9 +1302,9 @@
       scene.fog = new THREE.Fog(0x0d2542, 35, 180);
       camera = new THREE.PerspectiveCamera(58, 1, 0.1, 260);
       camera.position.set(0, 7.4, 17);
-      const hemisphere = new THREE.HemisphereLight(0xa8ddff, 0x142032, 2.05);
+      const hemisphere = new THREE.HemisphereLight(0x8ae3d8, 0x101918, 1.8);
       scene.add(hemisphere);
-      const sun = new THREE.DirectionalLight(0xffefd5, 3.2);
+      const sun = new THREE.DirectionalLight(0xc7ff9a, 2.5);
       sun.position.set(-8, 15, 8);
       sun.castShadow = true;
       sun.shadow.mapSize.set(1536, 1536);
@@ -1285,7 +1328,7 @@
         rail.castShadow = false;
         rail.receiveShadow = false;
       }
-      createMountainBackdrop();
+      createFacilityBackdrop();
       const particlePositions = [];
       for (let i = 0; i < 700; i += 1) {
         particlePositions.push((Math.random() - 0.5) * 190, 8 + Math.random() * 62, 20 - Math.random() * LEVEL_LENGTH * MAX_LEVEL);
@@ -1505,7 +1548,7 @@
       renderer.toneMappingExposure = 1.12;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.domElement.setAttribute("aria-label", "شاهد المسار ثلاثي الأبعاد وتحكم بالكرة الحمراء");
+      renderer.domElement.setAttribute("aria-label", "شاهد الممر الصناعي ثلاثي الأبعاد وتحكم بالنواة");
       world.append(renderer.domElement);
       buildWorld();
       resizeRenderer();
@@ -1542,6 +1585,7 @@
         boostReadyAt = now + 3600;
         gameElement.classList.add("is-boosting");
         window.setTimeout(() => gameElement.classList.remove("is-boosting"), 760);
+        updatePowerTag(now);
       }
     }
 
@@ -1555,7 +1599,13 @@
       playerName = sanitizeName(nameInput.value);
       nameInput.setCustomValidity("");
       nameInput.value = playerName;
-      if (playerName) localStorage.setItem(PLAYER_NAME_KEY, playerName);
+      if (playerName) {
+        try {
+          localStorage.setItem(PLAYER_NAME_KEY, playerName);
+        } catch (error) {
+          console.error("تعذر حفظ اسم الطيار على هذا الجهاز.", error);
+        }
+      }
       level = Number(stageSelect.value);
       lane = 1;
       targetLane = 1;
@@ -1678,8 +1728,8 @@
       state = "result";
       showResult(
         won ? "أسطورة المسارات! 🏆" : "انتهى السباق!",
-        `${playerName ? `${playerName}، ` : ""}نتيجتك ${formatter.format(score)} نقطة، وجمعت ${formatter.format(crystals)} بلورة، وأكملت ${formatter.format(completedStages)} مرحلة حتى المرحلة ${formatter.format(level)}.`,
-        won ? (completedStages === MAX_LEVEL ? "أنهيت المغامرة كاملة" : "أنهيت المرحلة الأخيرة") : "حاول تكسر رقمك"
+        `${playerName ? `${playerName}، ` : ""}حصيلتك ${formatter.format(score)} نقطة، وجمعت ${formatter.format(crystals)} شظية، واخترقت ${formatter.format(completedStages)} منطقة حتى المنطقة ${formatter.format(level)}.`,
+        won ? (completedStages === MAX_LEVEL ? "اكتمل بروتوكول الإخلاء" : "اخترقت آخر منطقة") : "حاول اختراقًا جديدًا"
       );
       void submitScore();
     }
@@ -1989,6 +2039,8 @@
     });
     tierSelect.addEventListener("change", populateStageOptions);
     stageSelect.addEventListener("change", previewSelectedStage);
+    playerName = loadSavedPlayerName();
+    nameInput.value = playerName;
     ballShapeSelect.value = selectedBallShape;
     ballShapeSelect.addEventListener("change", () => setBallShape(ballShapeSelect.value));
     nameInput.addEventListener("input", () => nameInput.setCustomValidity(""));
@@ -2020,13 +2072,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
